@@ -5,14 +5,15 @@ A bot to find cryptocurrency arbitrage opportunities within a network of Brazili
 
 #### Integrated Exchanges
 
-| Name                | Cryptocurrencies      | Status       |
-| ------------------- | ----------------------|--------------|
-| Foxbit (BlinkTrade) | BTC                   | Pending      |
-| MercadoBitcoin      | BTC, ETH              | Pending      |
-| BitcoinTrade        | BTC                   | Pending      |
-| Braziliex           | BTC, ETH, LTC         |              |
-| Walltime            | BTC                   | Pending      |
-| NegocieCoins        | BTC                   | Pending      |
+| Name                | Cryptocurrencies            | Status       |
+| ------------------- | ----------------------------|--------------|
+| Foxbit (BlinkTrade) | BTC                         | Pending      |
+| MercadoBitcoin      | BTC, ETH                    | Pending      |
+| BitcoinTrade        | BTC                         | Pending      |
+| OmniTrade           | BTC, ETH, LTC, BCH, DASH    | Pending      |
+| Braziliex           | BTC, ETH, LTC               | Pending      |
+| Walltime            | BTC                         | Pending      |
+| NegocieCoins        | BTC                         | Pending      |
 
 ## Authors
 
