@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/rodrigoalvesvieira/bitcointrade"
+	"github.com/rodrigoalvesvieira/negociecoins"
 )
 
 func main() {
@@ -26,6 +27,12 @@ func main() {
 		log.Print(err)
 	}
 
+	btcTickerNegocieCoins, err := negociecoins.GetTicker()
+	if err != nil {
+		log.Print(err)
+	}
+
 	yellow.Printf("%#v\r\n\n", btcTickerOmnitrade)
 	yellow.Printf("%#v\r\n\n", btcTickerBitcoinTrade)
+	yellow.Printf("%#v\r\n\n", btcTickerNegocieCoins)
 }

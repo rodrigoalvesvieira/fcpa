@@ -36,7 +36,7 @@ $ go run operatordesk.go
 | Foxbit              | BTC                         | Pending      |                        |
 | MercadoBitcoin      | BTC, ETH                    | Pending      |                        |
 | BitcoinTrade        | BTC                         | Pending      | [bitcointrade pkg]     |
-| OmniTrade           | BTC, ETH, LTC, BCH, DASH    | Pending      |                        |
+| OmniTrade           | BTC, ETH, LTC, BCH, DASH    | Pending      | [negociecoins pkg]     |
 | Braziliex           | BTC, ETH, LTC               | Pending      |                        |
 | Walltime            | BTC                         | Pending      |                        |
 | NegocieCoins        | BTC                         | Pending      |                        |
@@ -50,3 +50,4 @@ $ go run operatordesk.go
 © 2018 Rodrigo Alves Vieira. All Rights Reserved.
 
 [bitcointrade pkg]: https://github.com/rodrigoalvesvieira/operatordesk-bitcointrade
+[negociecoins pkg]: https://github.com/rodrigoalvesvieira/operatordesk-negociecoins
