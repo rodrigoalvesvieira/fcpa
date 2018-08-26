@@ -31,15 +31,15 @@ $ go run operatordesk.go
 
 #### Integrated Exchanges
 
-| Name                | Cryptocurrencies            | Status       |
-| ------------------- | ----------------------------|--------------|
-| Foxbit              | BTC                         | Pending      |
-| MercadoBitcoin      | BTC, ETH                    | Pending      |
-| BitcoinTrade        | BTC                         | Pending      |
-| OmniTrade           | BTC, ETH, LTC, BCH, DASH    | Pending      |
-| Braziliex           | BTC, ETH, LTC               | Pending      |
-| Walltime            | BTC                         | Pending      |
-| NegocieCoins        | BTC                         | Pending      |
+| Name                | Cryptocurrencies            | Status       | Package                |  
+| ------------------- | ----------------------------|--------------|------------------------|
+| Foxbit              | BTC                         | Pending      |                        |
+| MercadoBitcoin      | BTC, ETH                    | Pending      |                        |
+| BitcoinTrade        | BTC                         | Pending      | [bitcointrade pkg]     |
+| OmniTrade           | BTC, ETH, LTC, BCH, DASH    | Pending      |                        |
+| Braziliex           | BTC, ETH, LTC               | Pending      |                        |
+| Walltime            | BTC                         | Pending      |                        |
+| NegocieCoins        | BTC                         | Pending      |                        |
 
 ## Authors
 
@@ -49,3 +49,4 @@ $ go run operatordesk.go
 
 © 2018 Rodrigo Alves Vieira. All Rights Reserved.
 
+[bitcointrade pkg]: https://github.com/rodrigoalvesvieira/operatordesk-bitcointrade

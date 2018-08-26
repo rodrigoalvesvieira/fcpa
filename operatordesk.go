@@ -2,10 +2,11 @@ package main
 
 import (
 	"github.com/rodrigoalvesvieira/omnitrade"
-	"github.com/rodrigoalvesvieira/omnitrade/orderbook"
 	"github.com/rodrigoalvesvieira/omnitrade/core"
 	"github.com/fatih/color"
 	"log"
+
+	"github.com/rodrigoalvesvieira/bitcointrade"
 )
 
 func main() {
@@ -15,12 +16,16 @@ func main() {
 
 	yellow := color.New(color.FgYellow, color.Bold)
 
-	btcTicker, err := omnitrade.GetTicker(core.BITCOIN)
+	btcTickerOmnitrade, err := omnitrade.GetTicker(core.BITCOIN)
 	if err != nil {
 		log.Print(err)
 	}
 
-	yellow.Printf("%#v\r\n\n", btcTicker)
+	btcTickerBitcoinTrade, err := bitcointrade.GetTicker()
+	if err != nil {
+		log.Print(err)
+	}
 
-	orderbook.GetOrderBook(core.BITCOIN)
+	yellow.Printf("%#v\r\n\n", btcTickerOmnitrade)
+	yellow.Printf("%#v\r\n\n", btcTickerBitcoinTrade)
 }
