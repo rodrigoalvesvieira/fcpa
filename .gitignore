@@ -1,0 +1,5 @@
+bin/*
+keys
+.env
+vendor/*
+*.DS_Store
