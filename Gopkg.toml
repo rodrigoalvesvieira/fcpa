@@ -36,3 +36,15 @@
 [[constraint]]
   branch = "master"
   name = "github.com/rodrigoalvesvieira/omnitrade"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/kraken-io/kraken-go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/beldur/kraken-go-api-client"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ajph/bitstamp-go"

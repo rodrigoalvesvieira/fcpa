@@ -1,38 +1,43 @@
 package main
 
 import (
-	"github.com/rodrigoalvesvieira/omnitrade"
-	"github.com/rodrigoalvesvieira/omnitrade/core"
-	"github.com/fatih/color"
 	"log"
-
-	"github.com/rodrigoalvesvieira/bitcointrade"
-	"github.com/rodrigoalvesvieira/negociecoins"
+	"fmt"
+	"github.com/fatih/color"
+	"github.com/beldur/kraken-go-api-client"
+	"github.com/ajph/bitstamp-go"
 )
 
 func main() {
 	green := color.New(color.FgGreen, color.Bold)
 	green.Println("OPERATOR DESK")
-	green.Println("-------------------------------------------\n\n\n")
+	green.Println("-------------------------------------------\n\n")
 
+	// Color setups
+	cyan := color.New(color.FgCyan).Add(color.Underline)
 	yellow := color.New(color.FgYellow, color.Bold)
 
-	btcTickerOmnitrade, err := omnitrade.GetTicker(core.BITCOIN)
+	api := krakenapi.New("KEY", "SECRET")
+	bitstamp.SetAuth("123456", "key", "secret")
+
+	balances, err := bitstamp.Ticker("btceur")
 	if err != nil {
-		log.Print(err)
+		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
+		return
 	}
 
-	btcTickerBitcoinTrade, err := bitcointrade.GetTicker()
+	// GET TICKER FOR BISTAMP
+	cyan.Println("BITSTAMP")
+	yellow.Println(balances.Ask)
+
+	fmt.Println()
+
+	// GET TICKER FOR KRAKEN
+	ticker, err := api.Ticker(krakenapi.XXBTZEUR)
 	if err != nil {
-		log.Print(err)
+		log.Fatal(err)
 	}
 
-	btcTickerNegocieCoins, err := negociecoins.GetTicker()
-	if err != nil {
-		log.Print(err)
-	}
-
-	yellow.Printf("%#v\r\n\n", btcTickerOmnitrade)
-	yellow.Printf("%#v\r\n\n", btcTickerBitcoinTrade)
-	yellow.Printf("%#v\r\n\n", btcTickerNegocieCoins)
+	cyan.Println("KRAKEN")
+	yellow.Println(ticker.XXBTZEUR.Ask)
 }
