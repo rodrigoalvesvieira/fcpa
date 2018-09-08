@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/beldur/kraken-go-api-client"
 	"github.com/ajph/bitstamp-go"
+	"github.com/rodrigoalvesvieira/operatordesk/envars"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 	cyan := color.New(color.FgCyan).Add(color.Underline)
 	yellow := color.New(color.FgYellow, color.Bold)
 
-	api := krakenapi.New("KEY", "SECRET")
+	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 	bitstamp.SetAuth("123456", "key", "secret")
 
 	balances, err := bitstamp.Ticker("btceur")
@@ -28,6 +29,8 @@ func main() {
 
 	// GET TICKER FOR BISTAMP
 	cyan.Println("BITSTAMP")
+	yellow.Print("Current EUR balance: €")
+	yellow.Println(0)
 	yellow.Print("BTC ")
 	yellow.Print(balances.Ask)
 	yellow.Println()
@@ -40,7 +43,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	balance, err := api.Balance()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	cyan.Println("KRAKEN")
+	yellow.Print("Current EUR balance: €")
+	yellow.Println(balance.ZEUR)
 	yellow.Print("BTC ")
 	yellow.Print(ticker.XXBTZEUR.Ask)
 	yellow.Println()

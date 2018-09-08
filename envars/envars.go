@@ -13,3 +13,13 @@ func GetTwilioEnvVar() string {
 func GetTwilioPhoneNumber() string {
 	return os.Getenv("TWILIO_PHONE_NUMBER")
 }
+
+// GetKrakenAPIKey returns the Kraken API Key
+func GetKrakenAPIKey() string {
+	return os.Getenv("OPERATOR_DESK_KRAKEN_API_KEY")
+}
+
+// GetKrakenPrivateKey returns the Kraken Private Key
+func GetKrakenPrivateKey() string {
+	return os.Getenv("OPERATOR_DESK_KRAKEN_PRIVATE_KEY")
+}
