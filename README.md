@@ -1,18 +1,39 @@
 # OPERATOR DESK
-Software to find cryptocurrency arbitrage opportunities within a network of Brazilian exchanges
+Software to find cryptocurrency arbitrage opportunities within a network of cryptocurrency exchanges
+
+## Technologies & Services
+
+| Name                   | Version     |
+| ---------------------- | -----------:|
+| Go                     | 1.10.2      |
+| KDB+                   | 3.6         |
+| PostgreSQL             | 9.6.1.0     |
+| Twilio                 |             |
 
 ## Strategy
 
-Take two cryptocurrency exchanges A and B. A is selling coin `X` for R$20k and B is selling the same coin for R$20.3k. The idea is as follows:
+Take two cryptocurrency exchanges A and B. A is selling coin `X` for _$5570_ and B is selling the same coin for _$5585_. That constitutes a $15 spread.
 
-1. Buy `X` on exchange A
-2. Sell `Y` on exchange B
-3. Buy R$300 worth of `BTC` and keep it!
-4. Rinse and repeat!
+The idea is as follows:
+
+1. Buy `X` on exchange A with initial operational capital **β**
+2. Sell `Y` on exchange B for **β +** **_delta_**
+3. **_delta_** is considered profit
+4. Wait for opportunity to repeat operation from `Y` to `X`
 
 ## Ultimate Goal
 
-2 BTC per month!
+1. The goal is to profit $15 per trade.
+2. The more money to stake the more likely it is that a $15 profit can be made and the higher the frequency it may occur.
+3. The more Cryptocurrencies and exchanges that are supported, the higher the frequency of possible profit
+4. Operational Capital is always kept in fiat currency (USD or EUR)
+
+| Profit Target   | Frequency _per day_ | Total profit |
+| --------------- | -------------------:|-------------:|
+| $15             | 10                  | $150         |
+| $15             | 20                  | $300         |
+| $15             | 50                  | $750         |
+| $15             | 100                 | $1500        | 
 
 ## Up & Running
 
@@ -24,7 +45,6 @@ $ dep ensure
 
 ### How it Works
 
-
 ```shell
 $ go run operatordesk.go
 ```
@@ -33,13 +53,8 @@ $ go run operatordesk.go
 
 | Name                | Cryptocurrencies            | Status       | Package                |  
 | ------------------- | ----------------------------|--------------|------------------------|
-| Foxbit              | BTC                         | Pending      |                        |
-| MercadoBitcoin      | BTC, ETH                    | Pending      |                        |
-| BitcoinTrade        | BTC                         | Pending      | [bitcointrade pkg]     |
-| OmniTrade           | BTC, ETH, LTC, BCH, DASH    | Pending      | [negociecoins pkg]     |
-| Braziliex           | BTC, ETH, LTC               | Pending      |                        |
-| Walltime            | BTC                         | Pending      |                        |
-| NegocieCoins        | BTC                         | Pending      |                        |
+| Kraken              | BTC, ETH, LTC               | Pending      |                        |
+| Bitstamp            | BTC, ETH                    | Pending      |                        |
 
 ## Authors
 
