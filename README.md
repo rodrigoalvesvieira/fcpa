@@ -1,4 +1,4 @@
-# OPERATOR DESK
+# OPERATOR DESK v0.0.1
 Software to find cryptocurrency arbitrage opportunities within a network of Brazilian exchanges
 
 ## Strategy
