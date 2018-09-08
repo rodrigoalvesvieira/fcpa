@@ -28,7 +28,9 @@ func main() {
 
 	// GET TICKER FOR BISTAMP
 	cyan.Println("BITSTAMP")
-	yellow.Println(balances.Ask)
+	yellow.Print("BTC ")
+	yellow.Print(balances.Ask)
+	yellow.Println()
 
 	fmt.Println()
 
@@ -39,5 +41,7 @@ func main() {
 	}
 
 	cyan.Println("KRAKEN")
-	yellow.Println(ticker.XXBTZEUR.Ask)
+	yellow.Print("BTC ")
+	yellow.Print(ticker.XXBTZEUR.Ask)
+	yellow.Println()
 }
