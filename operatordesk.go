@@ -19,9 +19,15 @@ func main() {
 	yellow := color.New(color.FgYellow, color.Bold)
 
 	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
-	bitstamp.SetAuth("123456", "key", "secret")
+	bitstamp.SetAuth("912534", envars.GetBitstampAPIKey(), envars.GetBitstampAPISecret())
 
-	balances, err := bitstamp.Ticker("btceur")
+	bitstampBalance, err := bitstamp.AccountBalance()
+	if err != nil {
+		fmt.Printf("Can't get balance using bitstamp API: %s\n", err)
+		return
+	}
+
+	bitstampTicker, err := bitstamp.Ticker("btceur")
 	if err != nil {
 		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
 		return
@@ -30,15 +36,15 @@ func main() {
 	// GET TICKER FOR BISTAMP
 	cyan.Println("BITSTAMP")
 	yellow.Print("Current EUR balance: €")
-	yellow.Println(0)
+	yellow.Println(bitstampBalance.EurBalance)
 	yellow.Print("BTC ")
-	yellow.Print(balances.Ask)
+	yellow.Print(bitstampTicker.Ask)
 	yellow.Println()
 
 	fmt.Println()
 
 	// GET TICKER FOR KRAKEN
-	ticker, err := api.Ticker(krakenapi.XXBTZEUR)
+	krakenTicker, err := api.Ticker(krakenapi.XXBTZEUR)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,6 +58,6 @@ func main() {
 	yellow.Print("Current EUR balance: €")
 	yellow.Println(balance.ZEUR)
 	yellow.Print("BTC ")
-	yellow.Print(ticker.XXBTZEUR.Ask)
+	yellow.Print(krakenTicker.XXBTZEUR.Ask)
 	yellow.Println()
 }

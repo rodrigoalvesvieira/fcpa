@@ -60,6 +60,10 @@ $ go run operatordesk.go
 
 * Rodrigo Alves Vieira - <<rodrigoalvesvieira@protonmail.com>>
 
+## References
+
+* [Kraken: "How long do digital assets/cryptocurrency deposits take?"](https://support.kraken.com/hc/en-us/articles/203325283-How-long-do-digital-assets-cryptocurrency-deposits-take-)
+
 ## Copyright
 
 © 2018 Rodrigo Alves Vieira. All Rights Reserved.

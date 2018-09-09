@@ -23,3 +23,13 @@ func GetKrakenAPIKey() string {
 func GetKrakenPrivateKey() string {
 	return os.Getenv("OPERATOR_DESK_KRAKEN_PRIVATE_KEY")
 }
+
+// GetBitstampAPIKey returns the Bitstamp Private Key
+func GetBitstampAPIKey() string {
+	return os.Getenv("OPERATOR_DESK_BITSTAMP_API_KEY")
+}
+
+// GetBitstampAPISecret returns the Bitstamp API Secret
+func GetBitstampAPISecret() string {
+	return os.Getenv("OPERATOR_DESK_BITSTAMP_API_SECRET")
+}
