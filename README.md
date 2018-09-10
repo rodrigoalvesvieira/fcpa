@@ -1,5 +1,5 @@
 # OPERATOR DESK v0.0.2
-### _Ergodicity_, _Probability_ & _Statistics_
+### _Antifragility_, _Ergodicity_, _Probability_
 Software to find cryptocurrency arbitrage opportunities within a network of cryptocurrency exchanges
 
 ## Technologies & Services
