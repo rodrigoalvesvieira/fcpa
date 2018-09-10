@@ -11,6 +11,8 @@ import (
 
 func main() {
 	green := color.New(color.FgGreen, color.Bold)
+	magenta := color.New(color.FgMagenta, color.Bold)
+
 	green.Println("OPERATOR DESK")
 	green.Println("-------------------------------------------\n\n")
 
@@ -21,43 +23,71 @@ func main() {
 	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 	bitstamp.SetAuth("912534", envars.GetBitstampAPIKey(), envars.GetBitstampAPISecret())
 
-	bitstampBalance, err := bitstamp.AccountBalance()
+	bitstampEURBalance, err := bitstamp.AccountBalance()
 	if err != nil {
 		fmt.Printf("Can't get balance using bitstamp API: %s\n", err)
 		return
 	}
 
-	bitstampTicker, err := bitstamp.Ticker("btceur")
+	bitstampBTCTicker, err := bitstamp.Ticker("btceur")
 	if err != nil {
 		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
 		return
 	}
 
-	// GET TICKER FOR BISTAMP
-	cyan.Println("BITSTAMP")
-	yellow.Print("Current EUR balance: €")
-	yellow.Println(bitstampBalance.EurBalance)
-	yellow.Print("BTC ")
-	yellow.Print(bitstampTicker.Ask)
-	yellow.Println()
+	bitstampLTCTicker, err := bitstamp.Ticker("ltceur")
+	if err != nil {
+		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
+		return
+	}
+
+	bitstampETHTicker, err := bitstamp.Ticker("etheur")
+	if err != nil {
+		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
+		return
+	}
+
+	bitstampBCHTicker, err := bitstamp.Ticker("bcheur")
+	if err != nil {
+		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
+		return
+	}
+
+	row := "EXCHANGE      | EUR BALANCE | BTC          | LTC          | ETH           | BCH          "
+	magenta.Println(row)
+
+	row = fmt.Sprintf("Bitstamp      | %f    | %f  | %f    | %f    | %f    ", bitstampEURBalance.EurBalance, bitstampBTCTicker.Ask, bitstampLTCTicker.Ask, bitstampETHTicker.Ask, bitstampBCHTicker.Ask)
+	yellow.Println(row)
+
+	// KRAKEN API INTEGRATION
+	krakenEURBalance, err := api.Balance()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	krakenBTCTicker, err := api.Ticker(krakenapi.XXBTZEUR)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	krakenLTCTicker, err := api.Ticker(krakenapi.XLTCZEUR)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	krakenETHTicker, err := api.Ticker(krakenapi.XETHZEUR)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	krakenBCHTicker, err := api.Ticker(krakenapi.BCHEUR)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	row = fmt.Sprintf("Kraken        | %f   | %s   | %s     | %s     | %s    ", krakenEURBalance.ZEUR, krakenBTCTicker.XXBTZEUR.Ask[0], krakenLTCTicker.XLTCZEUR.Ask[0], krakenETHTicker.XETHZEUR.Ask[0], krakenBCHTicker.BCHEUR.Ask[0])
+	yellow.Println(row)
 
 	fmt.Println()
-
-	// GET TICKER FOR KRAKEN
-	krakenTicker, err := api.Ticker(krakenapi.XXBTZEUR)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	balance, err := api.Balance()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cyan.Println("KRAKEN")
-	yellow.Print("Current EUR balance: €")
-	yellow.Println(balance.ZEUR)
-	yellow.Print("BTC ")
-	yellow.Print(krakenTicker.XXBTZEUR.Ask)
-	yellow.Println()
+	cyan.Println("END")
 }
