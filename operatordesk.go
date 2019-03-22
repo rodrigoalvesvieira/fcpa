@@ -9,18 +9,7 @@ import (
 	"github.com/rodrigoalvesvieira/operatordesk/envars"
 )
 
-func main() {
-	green := color.New(color.FgGreen, color.Bold)
-	magenta := color.New(color.FgMagenta, color.Bold)
-
-	green.Println("OPERATOR DESK")
-	green.Println("-------------------------------------------\n\n")
-
-	// Color setups
-	cyan := color.New(color.FgCyan).Add(color.Underline)
-	yellow := color.New(color.FgYellow, color.Bold)
-
-	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
+func bitstampQuery(cl *color.Color) {
 	bitstamp.SetAuth("912534", envars.GetBitstampAPIKey(), envars.GetBitstampAPISecret())
 
 	bitstampEURBalance, err := bitstamp.AccountBalance()
@@ -53,11 +42,12 @@ func main() {
 		return
 	}
 
-	row := "EXCHANGE      | EUR BALANCE | BTC          | LTC          | ETH           | BCH          "
-	magenta.Println(row)
+	row := fmt.Sprintf("Bitstamp      | %f    | %f  | %f    | %f    | %f    ", bitstampEURBalance.EurBalance, bitstampBTCTicker.Ask, bitstampLTCTicker.Ask, bitstampETHTicker.Ask, bitstampBCHTicker.Ask)
+	cl.Println(row)
+}
 
-	row = fmt.Sprintf("Bitstamp      | %f    | %f  | %f    | %f    | %f    ", bitstampEURBalance.EurBalance, bitstampBTCTicker.Ask, bitstampLTCTicker.Ask, bitstampETHTicker.Ask, bitstampBCHTicker.Ask)
-	yellow.Println(row)
+func krakenQuery(cl *color.Color) {
+	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 
 	// KRAKEN API INTEGRATION
 	krakenEURBalance, err := api.Balance()
@@ -85,8 +75,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	row = fmt.Sprintf("Kraken        | %f   | %s   | %s     | %s     | %s    ", krakenEURBalance.ZEUR, krakenBTCTicker.XXBTZEUR.Ask[0], krakenLTCTicker.XLTCZEUR.Ask[0], krakenETHTicker.XETHZEUR.Ask[0], krakenBCHTicker.BCHEUR.Ask[0])
-	yellow.Println(row)
+	row := fmt.Sprintf("Kraken        | %f   | %s   | %s     | %s     | %s    ", krakenEURBalance.ZEUR, krakenBTCTicker.XXBTZEUR.Ask[0], krakenLTCTicker.XLTCZEUR.Ask[0], krakenETHTicker.XETHZEUR.Ask[0], krakenBCHTicker.BCHEUR.Ask[0])
+
+	cl.Println(row)
+}
+
+func main() {
+	green := color.New(color.FgGreen, color.Bold)
+	magenta := color.New(color.FgMagenta, color.Bold)
+
+	green.Println("OPERATOR DESK")
+	green.Println("-------------------------------------------\n\n")
+
+	// Color setups
+	cyan := color.New(color.FgCyan).Add(color.Underline)
+	yellow := color.New(color.FgYellow, color.Bold)
+
+	row := "EXCHANGE      | EUR BALANCE | BTC          | LTC          | ETH           | BCH          "
+	magenta.Println(row)
+
+	go bitstampQuery(yellow)
+	krakenQuery(yellow)
 
 	fmt.Println()
 	cyan.Println("END")
