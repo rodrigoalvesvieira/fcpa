@@ -18,7 +18,6 @@ func GetTwilioPhoneNumber() string {
 func GetKrakenAPIKey() string {
 	return os.Getenv("OPERATOR_DESK_KRAKEN_API_KEY")
 }
-
 // GetKrakenPrivateKey returns the Kraken Private Key
 func GetKrakenPrivateKey() string {
 	return os.Getenv("OPERATOR_DESK_KRAKEN_PRIVATE_KEY")

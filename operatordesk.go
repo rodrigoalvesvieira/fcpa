@@ -5,98 +5,177 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/beldur/kraken-go-api-client"
-	"github.com/ajph/bitstamp-go"
 	"github.com/rodrigoalvesvieira/operatordesk/envars"
+	"github.com/joho/godotenv"
+	"math/big"
+	"net/http"
+	"encoding/json"
+	"io/ioutil"
+	"strconv"
 )
 
-func bitstampQuery(cl *color.Color) {
-	bitstamp.SetAuth("912534", envars.GetBitstampAPIKey(), envars.GetBitstampAPISecret())
+type Coin string
+type Fiat string
 
-	bitstampEURBalance, err := bitstamp.AccountBalance()
-	if err != nil {
-		fmt.Printf("Can't get balance using bitstamp API: %s\n", err)
-		return
-	}
-
-	bitstampBTCTicker, err := bitstamp.Ticker("btceur")
-	if err != nil {
-		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
-		return
-	}
-
-	bitstampLTCTicker, err := bitstamp.Ticker("ltceur")
-	if err != nil {
-		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
-		return
-	}
-
-	bitstampETHTicker, err := bitstamp.Ticker("etheur")
-	if err != nil {
-		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
-		return
-	}
-
-	bitstampBCHTicker, err := bitstamp.Ticker("bcheur")
-	if err != nil {
-		log.Fatal("Can't get balance using bitstamp API: %s\n", err)
-		return
-	}
-
-	row := fmt.Sprintf("Bitstamp      | %f    | %f  | %f    | %f    | %f    ", bitstampEURBalance.EurBalance, bitstampBTCTicker.Ask, bitstampLTCTicker.Ask, bitstampETHTicker.Ask, bitstampBCHTicker.Ask)
-	cl.Println(row)
+type OrderItem struct {
+	Price  *big.Float // unit price
+	Volume *big.Float // volume at this price
 }
 
-func krakenQuery(cl *color.Color) {
+type Orderbook struct {
+	CoinName Coin
+	FiatName Fiat
+	Asks     []OrderItem
+	Bids     []OrderItem
+}
+
+func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []OrderItem {
+	itemArray := []OrderItem{}
+	for _, v := range orderbook {
+		item := OrderItem{Price: big.NewFloat(v.Price), Volume: big.NewFloat(v.Amount)}
+		itemArray = append(itemArray, item)
+	}
+	return itemArray
+}
+
+type TurkOrderBookResp struct {
+	Bid [][]string `json:"bids"`
+	Ask [][]string `json:"asks"`
+}
+
+type BalanceResponse struct {
+	ResponseData TurkOrderBookResp   `json:"data"`
+	StatusCode   int                 `json:"code"`
+}
+
+func getBTCTurkCostForVolume(volume *big.Float) {
+	printer := color.New(color.FgYellow, color.Bold)
+	printer.Println("GETTING ORDER BOOK - BTC TURX")
+
+	btcTurkBaseAPIUrl := "https://api.btcturk.com/api/v2/orderbook?pairSymbol=BTC_TRY"
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", btcTurkBaseAPIUrl, nil)
+	resp, err := client.Do(req)
+	if err == nil {
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			body, _ := ioutil.ReadAll(resp.Body)
+			var jsonData *BalanceResponse
+			errJSON := json.Unmarshal(body, &jsonData)
+
+			if errJSON == nil {
+				fmt.Println("Parsing successful")
+
+				// aggregate := big.NewFloat(0.0)
+
+				for i := 0; i < len(jsonData.ResponseData.Bid); i++ {
+					currentOrder := jsonData.ResponseData.Bid[i]
+
+					// orderPrice := currentOrder[0]
+					rawVol := currentOrder[1]
+					orderVol := big.NewFloat(0.0)
+
+					_, err := fmt.Sscan(rawVol, orderVol)
+					if err != nil {
+						log.Println("error scanning value:", err)
+					} else {
+
+
+						fmt.Println(orderVol)
+					}
+
+					fmt.Println(orderVol)
+				}
+
+			}
+		}
+	}
+}
+
+func printOrder(i int, volume *big.Float, price *big.Float) {
+	fmt.Println("Order #" + strconv.Itoa(i + 1) + " Volume: " + volume.String() + " Price: " + price.String())
+}
+
+func getKrakenCostForVolume() {
+	printer := color.New(color.FgGreen, color.Bold)
+	printer.Println("GETTING ORDER BOOK - KRAKEN")
+
 	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 
-	// KRAKEN API INTEGRATION
-	krakenEURBalance, err := api.Balance()
+	krakenUSDBalance, err := api.Depth(krakenapi.XXBTZUSD, 200)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	krakenBTCTicker, err := api.Ticker(krakenapi.XXBTZEUR)
-	if err != nil {
-		log.Fatal(err)
+	bookA := adaptOrderbook(krakenUSDBalance.Asks)
+
+	zero := big.NewFloat(0.0)
+	total := big.NewFloat(100000.0)
+	aggregate := big.NewFloat(0.0)
+	aggregateVol := big.NewFloat(0.0)
+
+	// ordersSum := 0
+
+	for i := 0; i < len(bookA); i++ {
+		orVol := bookA[i].Volume
+		orPrice := bookA[i].Price
+
+		printOrder(i, orVol, orPrice)
+
+		loc := big.NewFloat(0.0)
+		loc = loc.Mul(bookA[i].Price, orVol)
+
+		if aggregate.Cmp(total) < 0 {
+			aheadAggregate := zero.Add(loc, aggregate)
+
+			if (aheadAggregate.Cmp(total) > 0) {
+				rem := zero
+
+				rem.Sub(total, aggregate)
+
+				// fmt.Println("FALTA " + rem.String())
+
+				fmt.Println(loc)
+			} else {
+				aggregateVol.Add(aggregateVol, orVol)
+				aggregate.Add(aggregate, loc)
+				fmt.Print("=>")
+				fmt.Println(i)
+			}
+
+			//fmt.Println("AGG       " + aggregate.String())
+			//fmt.Println("AHEAD AGG " + aheadAggregate.String())
+
+		} else {
+			break
+		}
 	}
 
-	krakenLTCTicker, err := api.Ticker(krakenapi.XLTCZEUR)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("--------------")
 
-	krakenETHTicker, err := api.Ticker(krakenapi.XETHZEUR)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	krakenBCHTicker, err := api.Ticker(krakenapi.BCHEUR)
-	if err != nil {
-		log.Fatal(err)
-	}
+	getBTCTurkCostForVolume(aggregateVol)
 
-	row := fmt.Sprintf("Kraken        | %f   | %s   | %s     | %s     | %s    ", krakenEURBalance.ZEUR, krakenBTCTicker.XXBTZEUR.Ask[0], krakenLTCTicker.XLTCZEUR.Ask[0], krakenETHTicker.XETHZEUR.Ask[0], krakenBCHTicker.BCHEUR.Ask[0])
+	// fmt.Println("KRAKEN TOTAL TRAVERSED " + strconv.Itoa(ordersSum))
 
-	cl.Println(row)
+	fmt.Println("Total price Kraken " + aggregate.String())
+	fmt.Println("Total volume Kraken " + aggregateVol.String())
 }
 
 func main() {
-	green := color.New(color.FgGreen, color.Bold)
-	magenta := color.New(color.FgMagenta, color.Bold)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	green.Println("OPERATOR DESK")
+	green := color.New(color.FgGreen, color.Bold)
+	green.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
 	green.Println("-------------------------------------------\n\n")
 
-	// Color setups
-	cyan := color.New(color.FgCyan).Add(color.Underline)
-	yellow := color.New(color.FgYellow, color.Bold)
+	getKrakenCostForVolume()
 
-	row := "EXCHANGE      | EUR BALANCE | BTC          | LTC          | ETH           | BCH          "
-	magenta.Println(row)
-
-	go bitstampQuery(yellow)
-	krakenQuery(yellow)
-
-	fmt.Println()
-	cyan.Println("END")
+	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
+	magenta.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
 }
