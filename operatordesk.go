@@ -78,7 +78,7 @@ type BalanceResponse struct {
 
 func getBTCTurkCostForVolume(targetVolume *big.Float) {
 	printer := color.New(color.FgYellow, color.Bold)
-	printer.Println("GETTING ORDER BOOK - BTC TURX")
+	printer.Println("GETTING ORDER BOOK - BTCTURK")
 
 	btcTurkBaseAPIUrl := "https://api.btcturk.com/api/v2/orderbook?pairSymbol=BTC_TRY"
 
@@ -94,6 +94,7 @@ func getBTCTurkCostForVolume(targetVolume *big.Float) {
 			errJSON := json.Unmarshal(body, &jsonData)
 
 			if errJSON == nil {
+				aggregate := big.NewFloat(0.0)
 				aggregateVol := big.NewFloat(0.0)
 
 				bookBids := adaptOrderbookTurk(jsonData.ResponseData.Bid)
@@ -106,18 +107,31 @@ func getBTCTurkCostForVolume(targetVolume *big.Float) {
 						aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
 
 						if (aheadAggregate.Cmp(targetVolume) > 0) {
+							rem := big.NewFloat(0.0).Copy(targetVolume)
+							rem.Sub(rem, aggregateVol)
 
+							// We need less than the volume of the current entry to satisfy our target
+							// Calculating remaining volume to satisfy target
+							remFiat := big.NewFloat(0.0).Copy(rem)
+							remFiat.Mul(remFiat, currentOrder.Volume)
+
+							aggregate.Add(aggregate, remFiat)
+							aggregateVol.Add(aggregateVol, rem)
 						} else {
+							fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
+							fiatPayout.Mul(fiatPayout, currentOrder.Volume)
+
+							aggregate.Add(aggregate, fiatPayout)
 							aggregateVol.Add(aggregateVol, currentOrder.Volume)
 						}
 					} else {
 						break
 					}
-
 				}
 
-				fmt.Println("BTCTURK TOTAL TRAVERSED " + strconv.Itoa(i + 1))
-				fmt.Println("BTCTURK Total volume " + aggregateVol.String())
+				fmt.Println("BTCTURK TOTAL TRAVERSED  " + strconv.Itoa(i + 1))
+				fmt.Println("BTCTURK TOTAL FIAT       " + aggregate.String())
+				fmt.Println("BTCTURK TOTAL VOLUME     " + aggregateVol.String())
 			}
 		}
 	}
@@ -181,9 +195,8 @@ func getKrakenCostForVolume(total *big.Float) {
 	getBTCTurkCostForVolume(aggregateVol)
 
 	fmt.Println("KRAKEN TOTAL TRAVERSED " + strconv.Itoa(i + 1))
-
-	fmt.Println("KRAKEN price " + aggregate.String())
-	fmt.Println("KRAKEN volume " + aggregateVol.String())
+	fmt.Println("KRAKEN TOTAL FIAT      " + aggregate.String())
+	fmt.Println("KRAKEN TOTAL VOLUME    " + aggregateVol.String())
 }
 
 func main() {
@@ -194,11 +207,11 @@ func main() {
 
 	green := color.New(color.FgGreen, color.Bold)
 	green.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
-	green.Println("-------------------------------------------\n\n")
+	green.Println("-------------------------------------------\n")
 
 	target := big.NewFloat(100000.0)
 	getKrakenCostForVolume(target)
 
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
-	magenta.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
+	magenta.Println("-----------------------------------------")
 }
