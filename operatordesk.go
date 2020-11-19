@@ -81,14 +81,11 @@ func getBTCTurkCostForVolume(volume *big.Float) {
 					if err != nil {
 						log.Println("error scanning value:", err)
 					} else {
-
-
 						fmt.Println(orderVol)
 					}
 
 					fmt.Println(orderVol)
 				}
-
 			}
 		}
 	}
@@ -116,13 +113,12 @@ func getKrakenCostForVolume() {
 	aggregate := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
 
-	// ordersSum := 0
+	i := 0
 
-	for i := 0; i < len(bookA); i++ {
+	for i = 0; i < len(bookA); i++ {
 		orVol := bookA[i].Volume
-		orPrice := bookA[i].Price
-
-		printOrder(i, orVol, orPrice)
+		// orPrice := bookA[i].Price
+		// printOrder(i, orVol, orPrice)
 
 		loc := big.NewFloat(0.0)
 		loc = loc.Mul(bookA[i].Price, orVol)
@@ -131,23 +127,21 @@ func getKrakenCostForVolume() {
 			aheadAggregate := zero.Add(loc, aggregate)
 
 			if (aheadAggregate.Cmp(total) > 0) {
-				rem := zero
+				rem := big.NewFloat(0.0).Copy(total)
+				rem.Sub(rem, aggregate)
 
-				rem.Sub(total, aggregate)
+				aggregate.Add(aggregate, rem)
 
-				// fmt.Println("FALTA " + rem.String())
+				// Calculating remaining volume to satisfy target
+				remVol := big.NewFloat(0.0).Copy(rem)
+				remVol.Mul(remVol, orVol)
+				remVol.Quo(remVol, loc)
 
-				fmt.Println(loc)
+				aggregateVol.Add(aggregateVol, remVol)
 			} else {
-				aggregateVol.Add(aggregateVol, orVol)
 				aggregate.Add(aggregate, loc)
-				fmt.Print("=>")
-				fmt.Println(i)
+				aggregateVol.Add(aggregateVol, orVol)
 			}
-
-			//fmt.Println("AGG       " + aggregate.String())
-			//fmt.Println("AHEAD AGG " + aheadAggregate.String())
-
 		} else {
 			break
 		}
@@ -155,10 +149,9 @@ func getKrakenCostForVolume() {
 
 	fmt.Println("--------------")
 
+	// getBTCTurkCostForVolume(aggregateVol)
 
-	getBTCTurkCostForVolume(aggregateVol)
-
-	// fmt.Println("KRAKEN TOTAL TRAVERSED " + strconv.Itoa(ordersSum))
+	fmt.Println("KRAKEN TOTAL TRAVERSED " + strconv.Itoa(i + 1))
 
 	fmt.Println("Total price Kraken " + aggregate.String())
 	fmt.Println("Total volume Kraken " + aggregateVol.String())
