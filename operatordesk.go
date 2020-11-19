@@ -38,6 +38,34 @@ func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []OrderItem {
 	return itemArray
 }
 
+func adaptOrderbookTurk(orderbook [][]string) []OrderItem {
+	itemArray := []OrderItem{}
+
+	for _, v := range orderbook {
+
+		rawPrice := v[0]
+		rawVol := v[1]
+
+		orderPrice := big.NewFloat(0.0)
+		orderVol := big.NewFloat(0.0)
+
+		_, err := fmt.Sscan(rawPrice, orderPrice)
+		if err != nil {
+			log.Println("error scanning price:", err)
+		}
+
+		_, err = fmt.Sscan(rawVol, orderVol)
+		if err != nil {
+			log.Println("error scanning volume:", err)
+		}
+
+		item := OrderItem{Price: orderPrice, Volume: orderVol}
+		itemArray = append(itemArray, item)
+	}
+
+	return itemArray
+}
+
 type TurkOrderBookResp struct {
 	Bid [][]string `json:"bids"`
 	Ask [][]string `json:"asks"`
@@ -48,7 +76,7 @@ type BalanceResponse struct {
 	StatusCode   int                 `json:"code"`
 }
 
-func getBTCTurkCostForVolume(volume *big.Float) {
+func getBTCTurkCostForVolume(targetVolume *big.Float) {
 	printer := color.New(color.FgYellow, color.Bold)
 	printer.Println("GETTING ORDER BOOK - BTC TURX")
 
@@ -66,26 +94,30 @@ func getBTCTurkCostForVolume(volume *big.Float) {
 			errJSON := json.Unmarshal(body, &jsonData)
 
 			if errJSON == nil {
-				fmt.Println("Parsing successful")
+				aggregateVol := big.NewFloat(0.0)
 
-				// aggregate := big.NewFloat(0.0)
+				bookBids := adaptOrderbookTurk(jsonData.ResponseData.Bid)
+				i := 0
 
-				for i := 0; i < len(jsonData.ResponseData.Bid); i++ {
-					currentOrder := jsonData.ResponseData.Bid[i]
+				for i = 0; i < len(bookBids); i++ {
+					currentOrder := bookBids[i]
 
-					// orderPrice := currentOrder[0]
-					rawVol := currentOrder[1]
-					orderVol := big.NewFloat(0.0)
+					if (aggregateVol.Cmp(targetVolume) < 0) {
+						aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
 
-					_, err := fmt.Sscan(rawVol, orderVol)
-					if err != nil {
-						log.Println("error scanning value:", err)
+						if (aheadAggregate.Cmp(targetVolume) > 0) {
+
+						} else {
+							aggregateVol.Add(aggregateVol, currentOrder.Volume)
+						}
 					} else {
-						fmt.Println(orderVol)
+						break
 					}
 
-					fmt.Println(orderVol)
 				}
+
+				fmt.Println("BTCTURK TOTAL TRAVERSED " + strconv.Itoa(i + 1))
+				fmt.Println("BTCTURK Total volume " + aggregateVol.String())
 			}
 		}
 	}
@@ -95,7 +127,7 @@ func printOrder(i int, volume *big.Float, price *big.Float) {
 	fmt.Println("Order #" + strconv.Itoa(i + 1) + " Volume: " + volume.String() + " Price: " + price.String())
 }
 
-func getKrakenCostForVolume() {
+func getKrakenCostForVolume(total *big.Float) {
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
 
@@ -109,7 +141,6 @@ func getKrakenCostForVolume() {
 	bookA := adaptOrderbook(krakenUSDBalance.Asks)
 
 	zero := big.NewFloat(0.0)
-	total := big.NewFloat(100000.0)
 	aggregate := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
 
@@ -117,9 +148,6 @@ func getKrakenCostForVolume() {
 
 	for i = 0; i < len(bookA); i++ {
 		orVol := bookA[i].Volume
-		// orPrice := bookA[i].Price
-		// printOrder(i, orVol, orPrice)
-
 		loc := big.NewFloat(0.0)
 		loc = loc.Mul(bookA[i].Price, orVol)
 
@@ -132,6 +160,7 @@ func getKrakenCostForVolume() {
 
 				aggregate.Add(aggregate, rem)
 
+				// We need less than the volume of the current entry to satisfy our target
 				// Calculating remaining volume to satisfy target
 				remVol := big.NewFloat(0.0).Copy(rem)
 				remVol.Mul(remVol, orVol)
@@ -149,12 +178,12 @@ func getKrakenCostForVolume() {
 
 	fmt.Println("--------------")
 
-	// getBTCTurkCostForVolume(aggregateVol)
+	getBTCTurkCostForVolume(aggregateVol)
 
 	fmt.Println("KRAKEN TOTAL TRAVERSED " + strconv.Itoa(i + 1))
 
-	fmt.Println("Total price Kraken " + aggregate.String())
-	fmt.Println("Total volume Kraken " + aggregateVol.String())
+	fmt.Println("KRAKEN price " + aggregate.String())
+	fmt.Println("KRAKEN volume " + aggregateVol.String())
 }
 
 func main() {
@@ -167,7 +196,8 @@ func main() {
 	green.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
 	green.Println("-------------------------------------------\n\n")
 
-	getKrakenCostForVolume()
+	target := big.NewFloat(100000.0)
+	getKrakenCostForVolume(target)
 
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
 	magenta.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
