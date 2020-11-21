@@ -82,6 +82,10 @@ func getBTCTurkCostForVolume(targetVolume *big.Float) {
 
 	btcTurkBaseAPIUrl := "https://api.btcturk.com/api/v2/orderbook?pairSymbol=BTC_TRY"
 
+	// Assumes 1-5M TRY 30-day volume
+	// https://pro.btcturk.com/en/help/fees
+	takerFee := big.NewFloat(0.0016)
+
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", btcTurkBaseAPIUrl, nil)
 	resp, err := client.Do(req)
@@ -115,13 +119,17 @@ func getBTCTurkCostForVolume(targetVolume *big.Float) {
 							remFiat := big.NewFloat(0.0).Copy(rem)
 							remFiat.Mul(remFiat, currentOrder.Volume)
 
-							aggregate.Add(aggregate, remFiat)
+							realFiat := subtractFee(remFiat, takerFee)
+							aggregate.Add(aggregate, realFiat)
+
 							aggregateVol.Add(aggregateVol, rem)
 						} else {
 							fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
 							fiatPayout.Mul(fiatPayout, currentOrder.Volume)
 
-							aggregate.Add(aggregate, fiatPayout)
+							realFiat := subtractFee(fiatPayout, takerFee)
+							aggregate.Add(aggregate, realFiat)
+
 							aggregateVol.Add(aggregateVol, currentOrder.Volume)
 						}
 					} else {
@@ -141,6 +149,16 @@ func printOrder(i int, volume *big.Float, price *big.Float) {
 	fmt.Println("Order #" + strconv.Itoa(i + 1) + " Volume: " + volume.String() + " Price: " + price.String())
 }
 
+func subtractFee(volume *big.Float, fee *big.Float) *big.Float {
+	feeCost := big.NewFloat(0.0).Copy(volume)
+	feeCost.Mul(feeCost, fee)
+
+	vol := big.NewFloat(0.0).Copy(volume)
+	vol.Sub(vol, feeCost)
+
+	return vol
+}
+
 func getKrakenCostForVolume(total *big.Float) {
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
@@ -154,6 +172,9 @@ func getKrakenCostForVolume(total *big.Float) {
 
 	bookA := adaptOrderbook(krakenUSDBalance.Asks)
 
+	// Assumes 30-day $250,001 - $500,000 volume
+	// https://www.kraken.com/en-us/features/fee-schedule
+	takerFee := big.NewFloat(0.002)
 	zero := big.NewFloat(0.0)
 	aggregate := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
@@ -180,10 +201,13 @@ func getKrakenCostForVolume(total *big.Float) {
 				remVol.Mul(remVol, orVol)
 				remVol.Quo(remVol, loc)
 
-				aggregateVol.Add(aggregateVol, remVol)
+				realVol := subtractFee(remVol, takerFee)
+				aggregateVol.Add(aggregateVol, realVol)
 			} else {
 				aggregate.Add(aggregate, loc)
-				aggregateVol.Add(aggregateVol, orVol)
+
+				realVol := subtractFee(orVol, takerFee)
+				aggregateVol.Add(aggregateVol, realVol)
 			}
 		} else {
 			break
