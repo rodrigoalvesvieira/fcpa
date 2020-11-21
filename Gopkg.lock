@@ -34,6 +34,14 @@
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:ecd9aa82687cf31d1585d4ac61d0ba180e42e8a6182b85bd785fcca8dfeefc1b"
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
+
+[[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
@@ -57,6 +65,30 @@
   pruneopts = "UT"
   revision = "4910a1d54f876d7b22162a85f4d066d3ee649450"
 
+[[projects]]
+  digest = "1:45b203f418a320948c8e68434f665bcfb7f347e1aba894763a2de5ab577e1310"
+  name = "golang.org/x/text"
+  packages = [
+    "currency",
+    "feature/plural",
+    "internal",
+    "internal/catmsg",
+    "internal/format",
+    "internal/gen",
+    "internal/language",
+    "internal/language/compact",
+    "internal/number",
+    "internal/stringset",
+    "internal/tag",
+    "language",
+    "message",
+    "message/catalog",
+    "unicode/cldr",
+  ]
+  pruneopts = "UT"
+  revision = "22f1617af38ed4cd65b3b96e02bab267e560155c"
+  version = "v0.3.4"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -64,6 +96,10 @@
     "github.com/ajph/bitstamp-go",
     "github.com/beldur/kraken-go-api-client",
     "github.com/fatih/color",
+    "github.com/joho/godotenv",
+    "golang.org/x/text/currency",
+    "golang.org/x/text/language",
+    "golang.org/x/text/message",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"strconv"
+	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
 )
 
 type Coin string
@@ -138,7 +139,7 @@ func getBTCTurkCostForVolume(targetVolume *big.Float) {
 				}
 
 				fmt.Println("BTCTURK TOTAL TRAVERSED  " + strconv.Itoa(i + 1))
-				fmt.Println("BTCTURK TOTAL FIAT       " + aggregate.String())
+				fmt.Println("BTCTURK TOTAL FIAT       " + formatcurrency.PrintTRY(aggregate))
 				fmt.Println("BTCTURK TOTAL VOLUME     " + aggregateVol.String())
 			}
 		}
@@ -214,13 +215,11 @@ func getKrakenCostForVolume(total *big.Float) {
 		}
 	}
 
-	fmt.Println("--------------")
+	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i + 1))
+	fmt.Println("KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(aggregate))
+	fmt.Println("KRAKEN TOTAL VOLUME      " + aggregateVol.String())
 
 	getBTCTurkCostForVolume(aggregateVol)
-
-	fmt.Println("KRAKEN TOTAL TRAVERSED " + strconv.Itoa(i + 1))
-	fmt.Println("KRAKEN TOTAL FIAT      " + aggregate.String())
-	fmt.Println("KRAKEN TOTAL VOLUME    " + aggregateVol.String())
 }
 
 func main() {
