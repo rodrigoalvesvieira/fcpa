@@ -28,7 +28,11 @@ func printOrder(i int, volume *big.Float, price *big.Float) {
 	fmt.Println("Order #" + strconv.Itoa(i + 1) + " Volume: " + volume.String() + " Price: " + price.String())
 }
 
-func getKrakenFiatForVolume(targetVolume *big.Float) {
+// Takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
+func getKrakenFiatPayout(targetVolume *big.Float) *big.Float {
+	printer := color.New(color.FgBlue, color.Bold)
+	printer.Println("GETTING ORDER BOOK TO SELL CRYPTO - KRAKEN")
+
 	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 
 	krakenUSDBalance, err := api.Depth(krakenapi.XXBTZUSD, 200)
@@ -36,7 +40,7 @@ func getKrakenFiatForVolume(targetVolume *big.Float) {
 		log.Fatal(err)
 	}
 
-	book := adaptOrderbook(krakenUSDBalance.Bids)
+	book := adaptOrderbook(krakenUSDBalance.Asks)
 
 	// Assumes 30-day $250,001 - $500,000 volume
 	// https://www.kraken.com/en-us/features/fee-schedule
@@ -47,7 +51,7 @@ func getKrakenFiatForVolume(targetVolume *big.Float) {
 
 	for i = 0; i < len(book); i++ {
 		currentOrder := book[i]
-		fmt.Println(currentOrder.Volume)
+		printOrder(i, currentOrder.Volume, currentOrder.Price)
 
 		if (aggregateVol.Cmp(targetVolume) < 0) {
 			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
@@ -63,8 +67,9 @@ func getKrakenFiatForVolume(targetVolume *big.Float) {
 
 				realFiat := utils.SubtractFee(remFiat, takerFee)
 				aggregate.Add(aggregate, realFiat)
-
 				aggregateVol.Add(aggregateVol, rem)
+
+				break
 			} else {
 				fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
 				fiatPayout.Mul(fiatPayout, currentOrder.Volume)
@@ -82,9 +87,12 @@ func getKrakenFiatForVolume(targetVolume *big.Float) {
 	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i + 1))
 	fmt.Println("KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(aggregate))
 	fmt.Println("KRAKEN TOTAL VOLUME      " + aggregateVol.String())
+
+	return aggregate
 }
 
-func getKrakenCostForVolume(total *big.Float) {
+// Takes a target amount of fiat currency and returns the amount of crypto that it can buy
+func getKrakenCryptoPayout(total *big.Float) *big.Float {
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
 
@@ -128,6 +136,8 @@ func getKrakenCostForVolume(total *big.Float) {
 
 				realVol := utils.SubtractFee(remVol, takerFee)
 				aggregateVol.Add(aggregateVol, realVol)
+
+				break
 			} else {
 				aggregate.Add(aggregate, loc)
 
@@ -142,8 +152,7 @@ func getKrakenCostForVolume(total *big.Float) {
 	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i + 1))
 	fmt.Println("KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(aggregate))
 	fmt.Println("KRAKEN TOTAL VOLUME      " + aggregateVol.String())
-
-	btcturk.GetBTCTurkCostForVolume(aggregateVol)
+	return aggregateVol
 }
 
 func main() {
@@ -156,11 +165,18 @@ func main() {
 	green.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
 	green.Println("-------------------------------------------\n")
 
-	target := big.NewFloat(40000.0)
-	getKrakenCostForVolume(target)
+	usdIn := big.NewFloat(40000.0)
+	cryptoOut := getKrakenCryptoPayout(usdIn)
+
+	btcturk.GetBTCTurkCostForVolume(cryptoOut)
 
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
-	magenta.Println("-----------------------------------------")
+	//magenta.Println("-----------------------------------------")
 
-	getKrakenFiatForVolume(big.NewFloat(1.0))
+	cryptoIn := big.NewFloat(2.0)
+	usdOut := getKrakenFiatPayout(cryptoIn)
+	magenta.Println("KRAKEN Input BTC: " + cryptoIn.String() + " - " + usdOut.String())
+
+	red := color.New(color.FgRed).Add(color.Bold)
+	red.Println("-----------------------------------------")
 }
