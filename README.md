@@ -2,6 +2,8 @@
 ### _Antifragility_, _Ergodicity_, _Probability_
 Software to find cryptocurrency arbitrage opportunities within a network of cryptocurrency exchanges
 
+![The operators](https://i.imgur.com/Pf5AZFX.jpg)
+
 ## Technologies & Services
 
 | Name                   | Version     |
@@ -34,7 +36,7 @@ The idea is as follows:
 | $15             | 10                  | $150         |
 | $15             | 20                  | $300         |
 | $15             | 50                  | $750         |
-| $15             | 100                 | $1500        | 
+| $15             | 100                 | $1500        |
 
 ## Up & Running
 
@@ -52,7 +54,7 @@ $ go run operatordesk.go
 
 #### Integrated Exchanges
 
-| Name                | Cryptocurrencies            | Status       | Package                |  
+| Name                | Cryptocurrencies            | Status       | Package                |
 | ------------------- | ----------------------------|--------------|------------------------|
 | Kraken              | BTC, ETH, LTC               | Pending      |                        |
 | Bitstamp            | BTC, ETH                    | Pending      |                        |
