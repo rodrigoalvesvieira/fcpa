@@ -160,6 +160,62 @@ func subtractFee(volume *big.Float, fee *big.Float) *big.Float {
 	return vol
 }
 
+func getKrakenFiatForVolume(targetVolume *big.Float) {
+	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
+
+	krakenUSDBalance, err := api.Depth(krakenapi.XXBTZUSD, 200)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	book := adaptOrderbook(krakenUSDBalance.Bids)
+
+	// Assumes 30-day $250,001 - $500,000 volume
+	// https://www.kraken.com/en-us/features/fee-schedule
+	takerFee := big.NewFloat(0.002)
+	aggregate := big.NewFloat(0.0)
+	aggregateVol := big.NewFloat(0.0)
+	i := 0
+
+	for i = 0; i < len(book); i++ {
+		currentOrder := book[i]
+		fmt.Println(currentOrder.Volume)
+
+		if (aggregateVol.Cmp(targetVolume) < 0) {
+			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
+
+			if (aheadAggregate.Cmp(targetVolume) > 0) {
+				rem := big.NewFloat(0.0).Copy(targetVolume)
+				rem.Sub(rem, aggregateVol)
+
+				// We need less than the volume of the current entry to satisfy our target
+				// Calculating remaining volume to satisfy target
+				remFiat := big.NewFloat(0.0).Copy(rem)
+				remFiat.Mul(remFiat, currentOrder.Volume)
+
+				realFiat := subtractFee(remFiat, takerFee)
+				aggregate.Add(aggregate, realFiat)
+
+				aggregateVol.Add(aggregateVol, rem)
+			} else {
+				fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
+				fiatPayout.Mul(fiatPayout, currentOrder.Volume)
+
+				realFiat := subtractFee(fiatPayout, takerFee)
+				aggregate.Add(aggregate, realFiat)
+
+				aggregateVol.Add(aggregateVol, currentOrder.Volume)
+			}
+		} else {
+			break
+		}
+	}
+
+	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i + 1))
+	fmt.Println("KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(aggregate))
+	fmt.Println("KRAKEN TOTAL VOLUME      " + aggregateVol.String())
+}
+
 func getKrakenCostForVolume(total *big.Float) {
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
@@ -237,4 +293,6 @@ func main() {
 
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
 	magenta.Println("-----------------------------------------")
+
+	getKrakenFiatForVolume(big.NewFloat(1.89))
 }
