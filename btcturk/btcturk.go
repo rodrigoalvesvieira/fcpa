@@ -1,17 +1,18 @@
 package btcturk
 
 import (
-	"log"
+	"encoding/json"
 	"fmt"
-	"github.com/fatih/color"
+	"io/ioutil"
+	"log"
 	"math/big"
 	"net/http"
-	"encoding/json"
-	"io/ioutil"
 	"strconv"
+
+	"github.com/fatih/color"
+	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
 	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
 	"github.com/rodrigoalvesvieira/operatordesk/utils"
-	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
 )
 
 type OrderBookResp struct {
@@ -20,8 +21,8 @@ type OrderBookResp struct {
 }
 
 type BalanceResponse struct {
-	ResponseData OrderBookResp  `json:"data"`
-	StatusCode   int            `json:"code"`
+	ResponseData OrderBookResp `json:"data"`
+	StatusCode   int           `json:"code"`
 }
 
 func adaptOrderbook(orderbook [][]string) []ex.OrderItem {
@@ -52,15 +53,8 @@ func adaptOrderbook(orderbook [][]string) []ex.OrderItem {
 	return itemArray
 }
 
-func GetBTCTurkCostForVolume(targetVolume *big.Float) {
-	printer := color.New(color.FgYellow, color.Bold)
-	printer.Println("GETTING ORDER BOOK - BTCTURK")
-
+func getOrderBook() *BalanceResponse {
 	btcTurkBaseAPIUrl := "https://api.btcturk.com/api/v2/orderbook?pairSymbol=BTC_TRY&limit=300"
-
-	// Assumes 1-5M TRY 30-day volume
-	// https://pro.btcturk.com/en/help/fees
-	takerFee := big.NewFloat(0.0016)
 
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", btcTurkBaseAPIUrl, nil)
@@ -74,50 +68,126 @@ func GetBTCTurkCostForVolume(targetVolume *big.Float) {
 			errJSON := json.Unmarshal(body, &jsonData)
 
 			if errJSON == nil {
-				aggregate := big.NewFloat(0.0)
-				aggregateVol := big.NewFloat(0.0)
+				return jsonData
+				// return adaptOrderbook(jsonData.ResponseData.Ask)
+			} else {
 
-				bookBids := adaptOrderbook(jsonData.ResponseData.Bid)
-				fmt.Println("BTCTURK BOOK LENGTH " + strconv.Itoa(len(bookBids)));
-				i := 0
-
-				for i = 0; i < len(bookBids); i++ {
-					currentOrder := bookBids[i]
-
-					if (aggregateVol.Cmp(targetVolume) < 0) {
-						aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
-
-						if (aheadAggregate.Cmp(targetVolume) > 0) {
-							rem := big.NewFloat(0.0).Copy(targetVolume)
-							rem.Sub(rem, aggregateVol)
-
-							// We need less than the volume of the current entry to satisfy our target
-							// Calculating remaining volume to satisfy target
-							remFiat := big.NewFloat(0.0).Copy(rem)
-							remFiat.Mul(remFiat, currentOrder.Volume)
-
-							realFiat := utils.SubtractFee(remFiat, takerFee)
-							aggregate.Add(aggregate, realFiat)
-
-							aggregateVol.Add(aggregateVol, rem)
-						} else {
-							fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
-							fiatPayout.Mul(fiatPayout, currentOrder.Volume)
-
-							realFiat := utils.SubtractFee(fiatPayout, takerFee)
-							aggregate.Add(aggregate, realFiat)
-
-							aggregateVol.Add(aggregateVol, currentOrder.Volume)
-						}
-					} else {
-						break
-					}
-				}
-
-				fmt.Println("BTCTURK TOTAL TRAVERSED  " + strconv.Itoa(i + 1))
-				fmt.Println("BTCTURK TOTAL FIAT       " + formatcurrency.PrintTRY(aggregate))
-				fmt.Println("BTCTURK TOTAL VOLUME     " + aggregateVol.String())
 			}
+		} else {
+
 		}
 	}
+
+	return nil
+}
+
+func getOrderBookAsks() []ex.OrderItem {
+	return adaptOrderbook((getOrderBook()).ResponseData.Ask)
+}
+
+func getOrderBookBids() []ex.OrderItem {
+	return adaptOrderbook((getOrderBook()).ResponseData.Bid)
+}
+
+// Takes targetVolume ()
+func GetCryptoPayout(targetVolume *big.Float) *big.Float {
+	takerFee := big.NewFloat(0.002)
+	zero := big.NewFloat(0.0)
+	aggregate := big.NewFloat(0.0)
+
+	// Total fiat
+	aggregatePayout := big.NewFloat(0.0)
+
+	book := getOrderBookAsks()
+
+	i := 0
+	for i = 0; i < len(book); i++ {
+		currentOrder := book[i]
+		fmt.Println(currentOrder)
+
+		loc := big.NewFloat(0.0).Mul(currentOrder.Price, currentOrder.Volume)
+
+		if aggregate.Cmp(targetVolume) < 0 {
+			aheadAggregate := zero.Add(aggregate, loc)
+
+			if aheadAggregate.Cmp(targetVolume) > 0 {
+				rem := big.NewFloat(0.0).Copy(targetVolume)
+				rem.Sub(rem, aggregate)
+
+				aggregate.Add(aggregate, rem)
+
+				// We need less than the volume of the current entry to satisfy our target
+				// Calculating remaining volume to satisfy target
+				remVol := big.NewFloat(0.0).Copy(rem) // 0.4
+				remVol.Mul(remVol, currentOrder.Price)
+
+				payout := utils.SubtractFee(remVol, takerFee)
+				aggregatePayout.Add(aggregatePayout, payout)
+			} else {
+				aggregate.Add(aggregate, loc)
+
+				payout := utils.SubtractFee(currentOrder.Price, takerFee)
+				aggregatePayout.Add(aggregatePayout, payout)
+			}
+		} else {
+			break
+		}
+	}
+
+	return aggregatePayout
+}
+
+func GetFiatPayout(targetVolume *big.Float) *big.Float {
+	printer := color.New(color.FgYellow, color.Bold)
+	printer.Println("GETTING ORDER BOOK - BTCTURK")
+
+	// Assumes 1-5M TRY 30-day volume
+	// https://pro.btcturk.com/en/help/fees
+	takerFee := big.NewFloat(0.0016)
+	aggregate := big.NewFloat(0.0)
+	aggregateVol := big.NewFloat(0.0)
+
+	book := getOrderBookBids()
+
+	fmt.Println("BTCTURK BOOK LENGTH " + strconv.Itoa(len(book)))
+	i := 0
+
+	for i = 0; i < len(book); i++ {
+		currentOrder := book[i]
+
+		if aggregateVol.Cmp(targetVolume) < 0 {
+			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
+
+			if aheadAggregate.Cmp(targetVolume) > 0 {
+				rem := big.NewFloat(0.0).Copy(targetVolume)
+				rem.Sub(rem, aggregateVol)
+
+				// We need less than the volume of the current entry to satisfy our target
+				// Calculating remaining volume to satisfy target
+				remFiat := big.NewFloat(0.0).Copy(rem)
+				remFiat.Mul(remFiat, currentOrder.Volume)
+
+				realFiat := utils.SubtractFee(remFiat, takerFee)
+				aggregate.Add(aggregate, realFiat)
+
+				aggregateVol.Add(aggregateVol, rem)
+			} else {
+				fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
+				fiatPayout.Mul(fiatPayout, currentOrder.Volume)
+
+				realFiat := utils.SubtractFee(fiatPayout, takerFee)
+				aggregate.Add(aggregate, realFiat)
+
+				aggregateVol.Add(aggregateVol, currentOrder.Volume)
+			}
+		} else {
+			break
+		}
+	}
+
+	fmt.Println("BTCTURK TOTAL TRAVERSED  " + strconv.Itoa(i+1))
+	fmt.Println("BTCTURK TOTAL FIAT       " + formatcurrency.PrintTRY(aggregate))
+	fmt.Println("BTCTURK TOTAL VOLUME     " + aggregateVol.String())
+
+	return aggregate
 }

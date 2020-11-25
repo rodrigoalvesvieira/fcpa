@@ -1,18 +1,19 @@
 package main
 
 import (
-	"log"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/beldur/kraken-go-api-client"
-	"github.com/rodrigoalvesvieira/operatordesk/envars"
-	"github.com/joho/godotenv"
+	"log"
 	"math/big"
 	"strconv"
-	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
+
+	krakenapi "github.com/beldur/kraken-go-api-client"
+	"github.com/fatih/color"
+	"github.com/joho/godotenv"
 	"github.com/rodrigoalvesvieira/operatordesk/btcturk"
-	"github.com/rodrigoalvesvieira/operatordesk/utils"
+	"github.com/rodrigoalvesvieira/operatordesk/envars"
 	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
+	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
+	"github.com/rodrigoalvesvieira/operatordesk/utils"
 )
 
 func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
@@ -25,7 +26,7 @@ func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
 }
 
 func printOrder(i int, volume *big.Float, price *big.Float) {
-	fmt.Println("Order #" + strconv.Itoa(i + 1) + " Volume: " + volume.String() + " Price: " + price.String())
+	fmt.Println("Order #" + strconv.Itoa(i+1) + " Volume: " + volume.String() + " Price: " + price.String())
 }
 
 // Takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
@@ -53,10 +54,10 @@ func getKrakenFiatPayout(targetVolume *big.Float) *big.Float {
 		currentOrder := book[i]
 		printOrder(i, currentOrder.Volume, currentOrder.Price)
 
-		if (aggregateVol.Cmp(targetVolume) < 0) {
+		if aggregateVol.Cmp(targetVolume) < 0 {
 			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
 
-			if (aheadAggregate.Cmp(targetVolume) > 0) {
+			if aheadAggregate.Cmp(targetVolume) > 0 {
 				rem := big.NewFloat(0.0).Copy(targetVolume)
 				rem.Sub(rem, aggregateVol)
 
@@ -84,7 +85,7 @@ func getKrakenFiatPayout(targetVolume *big.Float) *big.Float {
 		}
 	}
 
-	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i + 1))
+	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i+1))
 	fmt.Println("KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(aggregate))
 	fmt.Println("KRAKEN TOTAL VOLUME      " + aggregateVol.String())
 
@@ -92,7 +93,7 @@ func getKrakenFiatPayout(targetVolume *big.Float) *big.Float {
 }
 
 // Takes a target amount of fiat currency and returns the amount of crypto that it can buy
-func getKrakenCryptoPayout(total *big.Float) *big.Float {
+func getCryptoPayout(total *big.Float) *big.Float {
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
 
@@ -119,10 +120,12 @@ func getKrakenCryptoPayout(total *big.Float) *big.Float {
 		loc := big.NewFloat(0.0)
 		loc = loc.Mul(bookA[i].Price, orVol)
 
+		printOrder(i, bookA[i].Volume, bookA[i].Price)
+
 		if aggregate.Cmp(total) < 0 {
 			aheadAggregate := zero.Add(loc, aggregate)
 
-			if (aheadAggregate.Cmp(total) > 0) {
+			if aheadAggregate.Cmp(total) > 0 {
 				rem := big.NewFloat(0.0).Copy(total)
 				rem.Sub(rem, aggregate)
 
@@ -149,7 +152,7 @@ func getKrakenCryptoPayout(total *big.Float) *big.Float {
 		}
 	}
 
-	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i + 1))
+	fmt.Println("KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(i+1))
 	fmt.Println("KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(aggregate))
 	fmt.Println("KRAKEN TOTAL VOLUME      " + aggregateVol.String())
 	return aggregateVol
@@ -163,20 +166,29 @@ func main() {
 
 	green := color.New(color.FgGreen, color.Bold)
 	green.Println("BRENT's FIAT-CRYPTO PARITY ARBITRAGE DESK")
+	green.Println("INPUT USD OUTPUT TRY")
+
 	green.Println("-------------------------------------------\n")
 
-	usdIn := big.NewFloat(40000.0)
-	cryptoOut := getKrakenCryptoPayout(usdIn)
+	usdIn := big.NewFloat(1000.0)
+	cryptoOut := getCryptoPayout(usdIn)
 
-	btcturk.GetBTCTurkCostForVolume(cryptoOut)
+	btcturk.GetFiatPayout(cryptoOut)
 
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
-	//magenta.Println("-----------------------------------------")
 
-	cryptoIn := big.NewFloat(2.0)
+	cryptoIn := big.NewFloat(5.0)
 	usdOut := getKrakenFiatPayout(cryptoIn)
-	magenta.Println("KRAKEN Input BTC: " + cryptoIn.String() + " - " + usdOut.String())
+	magenta.Println("KRAKEN SELL BTC: TOTAL USD " + usdOut.String() + " FOR " + cryptoIn.String() + " BTC")
 
 	red := color.New(color.FgRed).Add(color.Bold)
 	red.Println("-----------------------------------------")
+	magenta.Println("-----------------------------------------")
+
+	green.Println("INPUT TRY OUTPUT USD")
+
+	cryptoIn = big.NewFloat(5.0)
+	tryOut := btcturk.GetCryptoPayout(cryptoIn)
+
+	green.Println("BTCTURK SELL BTC: TOTAL TRY " + tryOut.String() + " FOR " + cryptoIn.String() + " BTC")
 }
