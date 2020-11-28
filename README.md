@@ -1,17 +1,15 @@
-# OPERATOR DESK v0.0.2
-### _Antifragility_, _Ergodicity_, _Probability_
-Software to find cryptocurrency arbitrage opportunities within a network of cryptocurrency exchanges
+# Fiat-Crypto Parity Arbitrage Algorithm (FCPA) v0.0.2
+> Software to find cryptocurrency arbitrage opportunities within a network of cryptocurrency exchanges
 
-![The operators](https://i.imgur.com/Pf5AZFX.jpg)
+![The arbitrageurs](https://i.imgur.com/Pf5AZFX.jpg)
 
 ## Technologies & Services
 
 | Name                   | Version     |
 | ---------------------- | -----------:|
-| Go                     | 1.10.2      |
-| KDB+                   | 3.6         |
-| PostgreSQL             | 9.6.1.0     |
-| Twilio                 |             |
+| Go                     | 1.15.3      |
+| Timescale              | 1.7.4       |
+| PostgreSQL             | 11.10       |
 
 ## Strategy
 
@@ -69,7 +67,4 @@ $ go run operatordesk.go
 
 ## Copyright
 
-© 2018 Rodrigo Alves Vieira. All Rights Reserved.
-
-[bitcointrade pkg]: https://github.com/rodrigoalvesvieira/operatordesk-bitcointrade
-[negociecoins pkg]: https://github.com/rodrigoalvesvieira/operatordesk-negociecoins
+© 2018-2020 Rodrigo Alves Vieira. All Rights Reserved.
