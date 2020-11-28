@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
-
 	"github.com/fatih/color"
 	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
 	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
@@ -25,7 +24,7 @@ type BalanceResponse struct {
 	StatusCode   int           `json:"code"`
 }
 
-func adaptOrderbook(orderbook [][]string) []ex.OrderItem {
+func AdaptOrderbook(orderbook [][]string) []ex.OrderItem {
 	itemArray := []ex.OrderItem{}
 
 	for _, v := range orderbook {
@@ -53,7 +52,7 @@ func adaptOrderbook(orderbook [][]string) []ex.OrderItem {
 	return itemArray
 }
 
-func getOrderBook() *BalanceResponse {
+func GetOrderBook() OrderBookResp {
 	btcTurkBaseAPIUrl := "https://api.btcturk.com/api/v2/orderbook?pairSymbol=BTC_TRY&limit=300"
 
 	client := &http.Client{}
@@ -68,7 +67,7 @@ func getOrderBook() *BalanceResponse {
 			errJSON := json.Unmarshal(body, &jsonData)
 
 			if errJSON == nil {
-				return jsonData
+				return jsonData.ResponseData
 				// return adaptOrderbook(jsonData.ResponseData.Ask)
 			} else {
 
@@ -78,15 +77,15 @@ func getOrderBook() *BalanceResponse {
 		}
 	}
 
-	return nil
+	return OrderBookResp{}
 }
 
 func getOrderBookAsks() []ex.OrderItem {
-	return adaptOrderbook((getOrderBook()).ResponseData.Ask)
+	return AdaptOrderbook((GetOrderBook()).Ask)
 }
 
 func getOrderBookBids() []ex.OrderItem {
-	return adaptOrderbook((getOrderBook()).ResponseData.Bid)
+	return AdaptOrderbook((GetOrderBook()).Bid)
 }
 
 // Takes targetVolume ()
@@ -148,8 +147,6 @@ func GetFiatPayout(targetVolume *big.Float) *big.Float {
 	aggregateVol := big.NewFloat(0.0)
 
 	book := getOrderBookBids()
-
-	fmt.Println("BTCTURK BOOK LENGTH " + strconv.Itoa(len(book)))
 	i := 0
 
 	for i = 0; i < len(book); i++ {
@@ -190,4 +187,58 @@ func GetFiatPayout(targetVolume *big.Float) *big.Float {
 	fmt.Println("BTCTURK TOTAL VOLUME     " + aggregateVol.String())
 
 	return aggregate
+}
+
+func getOrderCost(order ex.OrderItem) *big.Float {
+	base := big.NewFloat(0.0).Copy(order.Price)
+	return base.Mul(base, order.Volume)
+}
+
+func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
+	// Assumes 1-5M TRY 30-day volume
+	// https://pro.btcturk.com/en/help/fees
+	takerFee := big.NewFloat(0.0016)
+	aggregate := big.NewFloat(0.0)
+	aggregateVol := big.NewFloat(0.0)
+	totalCryptoVolume := big.NewFloat(0.0)
+	totalFiatVolume := big.NewFloat(0.0)
+
+	orderCount := 0
+	i := 0
+
+	for i = 0; i < len(book); i++ {
+		currentOrder := book[i]
+		totalCryptoVolume.Add(totalCryptoVolume, currentOrder.Volume)
+		totalFiatVolume.Add(totalFiatVolume, getOrderCost(currentOrder))
+
+		if aggregateVol.Cmp(targetVolume) < 0 {
+			orderCount += 1
+			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
+
+			if aheadAggregate.Cmp(targetVolume) > 0 {
+				rem := big.NewFloat(0.0).Copy(targetVolume)
+				rem.Sub(rem, aggregateVol)
+
+				// We need less than the volume of the current entry to satisfy our target
+				// Calculating remaining volume to satisfy target
+				remFiat := big.NewFloat(0.0).Copy(rem)
+				remFiat.Mul(remFiat, currentOrder.Volume)
+
+				realFiat := utils.SubtractFee(remFiat, takerFee)
+				aggregate.Add(aggregate, realFiat)
+
+				aggregateVol.Add(aggregateVol, rem)
+			} else {
+				fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
+				fiatPayout.Mul(fiatPayout, currentOrder.Volume)
+
+				realFiat := utils.SubtractFee(fiatPayout, takerFee)
+				aggregate.Add(aggregate, realFiat)
+
+				aggregateVol.Add(aggregateVol, currentOrder.Volume)
+			}
+		}
+	}
+
+	return aggregateVol, aggregate, orderCount, totalCryptoVolume, totalFiatVolume, i
 }
