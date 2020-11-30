@@ -39,7 +39,6 @@ func GetKrakenFiatPayout(targetVolume *big.Float) *big.Float {
 
 	for i = 0; i < len(book); i++ {
 		currentOrder := book[i]
-		// printOrder(i, currentOrder.Volume, currentOrder.Price)
 
 		if aggregateVol.Cmp(targetVolume) < 0 {
 			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
@@ -104,8 +103,6 @@ func calculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *
 
 		if aggregate.Cmp(total) < 0 {
 			orderCount += 1
-			// printOrder(i, currentOrder.Volume, currentOrder.Price)
-
 			aheadAggregate := zero.Add(loc, aggregate)
 
 			if aheadAggregate.Cmp(total) > 0 {

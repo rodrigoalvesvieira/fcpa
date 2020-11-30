@@ -207,11 +207,6 @@ func GetFiatPayout(targetVolume *big.Float) *big.Float {
 	return aggregate
 }
 
-func getOrderCost(order ex.OrderItem) *big.Float {
-	base := big.NewFloat(0.0).Copy(order.Price)
-	return base.Mul(base, order.Volume)
-}
-
 func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	// Assumes 1-5M TRY 30-day volume
 	// https://pro.btcturk.com/en/help/fees
@@ -227,7 +222,7 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 	for i = 0; i < len(book); i++ {
 		currentOrder := book[i]
 		totalCryptoVolume.Add(totalCryptoVolume, currentOrder.Volume)
-		totalFiatVolume.Add(totalFiatVolume, getOrderCost(currentOrder))
+		totalFiatVolume.Add(totalFiatVolume, utils.GetOrderCost(currentOrder))
 
 		if aggregateVol.Cmp(targetVolume) < 0 {
 			orderCount += 1

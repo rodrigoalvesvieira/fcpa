@@ -92,49 +92,21 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 	}
 }
 
-func processArbitrage(_ []ex.Orderbook) {
-}
+func processArbitrage(books []ex.Orderbook) {
+	krakenBook := books[0]
+	btcTurkBook := books[1]
 
-func main() {
+	fmt.Println(len(krakenBook.Asks))
+	fmt.Println(len(btcTurkBook.Asks))
+
 	cyan := color.New(color.FgCyan).Add(color.Underline)
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
-	green := color.New(color.FgGreen, color.Bold)
 	yellow := color.New(color.FgYellow, color.Bold)
-
-	green.Println("FIAT-CRYPTO PARITY ARBITRAGE DESK")
-	green.Println("INPUT USD OUTPUT TRY")
-
-	green.Println("-------------------------------------------\n")
-
-	// Neue Kabel
 
 	// USD ENTRY POINTS
 	usdInTier1 := big.NewFloat(10000.0)
 	usdInTier2 := big.NewFloat(100000.0)
 	usdInTier3 := big.NewFloat(500000.0)
-
-	//btcturk.GetFiatPayout(cryptoOut)
-
-	// KRAKEN - GETTING ORDER BOOK
-	krakenBook, _ := kraken.GetOrderBook()
-	nsec := time.Now().UnixNano()
-	fmt.Print("RESPONSE TIME (NORMAL):  ")
-	fmt.Println(nsec)
-
-	// BTCTURK - GETTING ORDER BOOK
-	btcTurkBook, _ := btcturk.GetOrderBook()
-	nsec = time.Now().UnixNano()
-	fmt.Print("RESPONSE TIME (NORMAL):  ")
-	fmt.Println(nsec)
-
-	var book1 ex.Orderbook
-	var book2 ex.Orderbook
-	funcs := []GenericFunction{
-		makeRequest(kraken.GetOrderBook,  &book1),
-		makeRequest(btcturk.GetOrderBook, &book2),
-	}
-    	RunAsyncAllowErrors(funcs...)
-	processArbitrage([]ex.Orderbook{book1, book2})
 
 	fmt.Println("QUERYING " + formatcurrency.PrintUSD(usdInTier1))
 	cryptoOut, fiatIn, orderCount, bookCrypto, bookFiat, bookCount := kraken.GetCryptoPayoutForBook(krakenBook.Bids, usdInTier1)
@@ -182,4 +154,22 @@ func main() {
 	cyan.Println("BTCTURK TOTAL BOOK VOLUME " + btcTurkBookCrypto.String())
 	cyan.Println("BTCTURK TOTAL BOOK LENGTH " + strconv.Itoa(btcTurkBookCount))
 	cyan.Println("BTCTURK TOTAL BOOK FIAT   " + formatcurrency.PrintUSD(btcTurkBookFiat))
+}
+
+func main() {
+	green := color.New(color.FgGreen, color.Bold)
+
+	green.Println("FIAT-CRYPTO PARITY ARBITRAGE DESK")
+	green.Println("INPUT USD OUTPUT TRY")
+
+	green.Println("-------------------------------------------\n")
+
+	var book1 ex.Orderbook
+	var book2 ex.Orderbook
+	funcs := []GenericFunction{
+		makeRequest(kraken.GetOrderBook,  &book1),
+		makeRequest(btcturk.GetOrderBook, &book2),
+	}
+    	RunAsyncAllowErrors(funcs...)
+	processArbitrage([]ex.Orderbook{book1, book2})
 }
