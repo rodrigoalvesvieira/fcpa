@@ -10,6 +10,7 @@
 | Go                     | 1.15.3      |
 | Timescale              | 1.7.4       |
 | PostgreSQL             | 11.10       |
+| Protocol Buffers       | 3.14.0      |
 
 ## Strategy
 

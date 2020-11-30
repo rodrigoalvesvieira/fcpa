@@ -5,15 +5,15 @@ import (
 	"runtime/debug"
 	"sync"
 	"fmt"
-	"log"
 	"math/big"
+	"time"
 	"strconv"
 	"github.com/fatih/color"
-	"github.com/joho/godotenv"
 	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
 	"github.com/rodrigoalvesvieira/operatordesk/btcturk"
 	"github.com/rodrigoalvesvieira/operatordesk/kraken"
 	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
+	_ "github.com/rodrigoalvesvieira/operatordesk/startup"
 )
 
 // Alias for a function that takes no args and returns an error
@@ -83,17 +83,16 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 			return err
 		}
 
+		nsec := time.Now().UnixNano()
+		fmt.Print("RESPONSE TIME (THREADS): ")
+		fmt.Println(nsec)
+
 		*book = *res
 		return nil
 	}
 }
 
-func processArbitrage(books []ex.Orderbook) {
-	fmt.Println("TINTARELLA")
-	fmt.Println(books[0])
-
-	fmt.Println("TINTARELLA")
-	fmt.Println(books[1])
+func processArbitrage(_ []ex.Orderbook) {
 }
 
 func main() {
@@ -105,11 +104,6 @@ func main() {
 	}
     	RunAsyncAllowErrors(funcs...)
 	processArbitrage([]ex.Orderbook{book1, book2})
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	cyan := color.New(color.FgCyan).Add(color.Underline)
 	magenta := color.New(color.FgMagenta, color.Bold).Add(color.Underline)
@@ -130,10 +124,18 @@ func main() {
 
 	// KRAKEN - GETTING ORDER BOOK
 	krakenBook := kraken.GetKrakenBook()
+	nsec := time.Now().UnixNano()
+	fmt.Print("RESPONSE TIME (NORMAL):  ")
+	fmt.Println(nsec)
+
 	krakenAskBook := kraken.AdaptOrderbook(krakenBook.Asks)
 
 	// BTCTURK - GETTING ORDER BOOK
 	btcTurkBook, _ := btcturk.GetOrderBook()
+	nsec = time.Now().UnixNano()
+	fmt.Print("RESPONSE TIME (NORMAL):  ")
+	fmt.Println(nsec)
+
 	// btcTurkBidBook := btcturk.AdaptOrderbook(btcTurkBook.Ask, btcTurkBook.Bid)
 
 	fmt.Println("QUERYING " + formatcurrency.PrintUSD(usdInTier1))
