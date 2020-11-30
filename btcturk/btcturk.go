@@ -24,11 +24,13 @@ type BalanceResponse struct {
 	StatusCode   int           `json:"code"`
 }
 
-func AdaptOrderbook(orderbook [][]string) []ex.OrderItem {
-	itemArray := []ex.OrderItem{}
+func AdaptOrderbook(orderbookAsks [][]string, orderbookBids [][]string) *ex.Orderbook {
+	itemArrayAsks := []ex.OrderItem{}
+	itemArrayBids := []ex.OrderItem{}
 
-	for _, v := range orderbook {
-
+	for i, _ := range orderbookAsks {
+		// Parsing ASK order @ i
+		v := orderbookAsks[i]
 		rawPrice := v[0]
 		rawVol := v[1]
 
@@ -46,13 +48,35 @@ func AdaptOrderbook(orderbook [][]string) []ex.OrderItem {
 		}
 
 		item := ex.OrderItem{Price: orderPrice, Volume: orderVol}
-		itemArray = append(itemArray, item)
+		itemArrayAsks = append(itemArrayAsks, item)
+
+		// Parsing BID order @ i
+
+		v = orderbookBids[i]
+		rawPrice = v[0]
+		rawVol = v[1]
+
+		orderPrice = big.NewFloat(0.0)
+		orderVol = big.NewFloat(0.0)
+
+		_, err = fmt.Sscan(rawPrice, orderPrice)
+		if err != nil {
+			log.Println("error scanning price:", err)
+		}
+
+		_, err = fmt.Sscan(rawVol, orderVol)
+		if err != nil {
+			log.Println("error scanning volume:", err)
+		}
+
+		item = ex.OrderItem{Price: orderPrice, Volume: orderVol}
+		itemArrayBids = append(itemArrayBids, item)
 	}
 
-	return itemArray
+	return &ex.Orderbook{Asks: itemArrayAsks, Bids: itemArrayBids}
 }
 
-func GetOrderBook() OrderBookResp {
+func GetOrderBook() (*ex.Orderbook, error) {
 	btcTurkBaseAPIUrl := "https://api.btcturk.com/api/v2/orderbook?pairSymbol=BTC_TRY&limit=300"
 
 	client := &http.Client{}
@@ -67,8 +91,8 @@ func GetOrderBook() OrderBookResp {
 			errJSON := json.Unmarshal(body, &jsonData)
 
 			if errJSON == nil {
-				return jsonData.ResponseData
-				// return adaptOrderbook(jsonData.ResponseData.Ask)
+				rawBook := AdaptOrderbook(jsonData.ResponseData.Ask, jsonData.ResponseData.Bid)
+				return rawBook, nil
 			} else {
 
 			}
@@ -77,15 +101,7 @@ func GetOrderBook() OrderBookResp {
 		}
 	}
 
-	return OrderBookResp{}
-}
-
-func getOrderBookAsks() []ex.OrderItem {
-	return AdaptOrderbook((GetOrderBook()).Ask)
-}
-
-func getOrderBookBids() []ex.OrderItem {
-	return AdaptOrderbook((GetOrderBook()).Bid)
+	return &ex.Orderbook{}, nil
 }
 
 // Takes targetVolume ()
@@ -97,7 +113,8 @@ func GetCryptoPayout(targetVolume *big.Float) *big.Float {
 	// Total fiat
 	aggregatePayout := big.NewFloat(0.0)
 
-	book := getOrderBookAsks()
+	raw_book, _ := GetOrderBook()
+	book := raw_book.Asks
 
 	i := 0
 	for i = 0; i < len(book); i++ {
@@ -146,7 +163,8 @@ func GetFiatPayout(targetVolume *big.Float) *big.Float {
 	aggregate := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
 
-	book := getOrderBookBids()
+	raw_book, _ := GetOrderBook()
+	book := raw_book.Bids
 	i := 0
 
 	for i = 0; i < len(book); i++ {
