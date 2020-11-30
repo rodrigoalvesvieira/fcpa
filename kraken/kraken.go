@@ -5,17 +5,15 @@ import (
 	"log"
 	"math/big"
 	"strconv"
-
 	krakenapi "github.com/beldur/kraken-go-api-client"
 	"github.com/fatih/color"
-	//"github.com/rodrigoalvesvieira/operatordesk/btcturk"
 	"github.com/rodrigoalvesvieira/operatordesk/envars"
 	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
 	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
 	"github.com/rodrigoalvesvieira/operatordesk/utils"
 )
 
-func AdaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
+func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
 	itemArray := []ex.OrderItem{}
 	for _, v := range orderbook {
 		item := ex.OrderItem{Price: big.NewFloat(v.Price), Volume: big.NewFloat(v.Amount)}
@@ -24,23 +22,13 @@ func AdaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
 	return itemArray
 }
 
-func printOrder(i int, volume *big.Float, price *big.Float) {
-	fmt.Println("Order #" + strconv.Itoa(i+1) + " Volume: " + volume.String() + " Price: " + price.String())
-}
-
 // Takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
 func GetKrakenFiatPayout(targetVolume *big.Float) *big.Float {
 	printer := color.New(color.FgBlue, color.Bold)
 	printer.Println("GETTING ORDER BOOK TO SELL CRYPTO - KRAKEN")
 
-	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
-
-	krakenUSDBalance, err := api.Depth(krakenapi.XXBTZUSD, 200)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	book := AdaptOrderbook(krakenUSDBalance.Asks)
+	raw_book, _ := GetOrderBook()
+	book := raw_book.Asks
 
 	// Assumes 30-day $250,001 - $500,000 volume
 	// https://www.kraken.com/en-us/features/fee-schedule
@@ -91,11 +79,6 @@ func GetKrakenFiatPayout(targetVolume *big.Float) *big.Float {
 	return aggregate
 }
 
-func getOrderCost(order ex.OrderItem) *big.Float {
-	base := big.NewFloat(0.0).Copy(order.Price)
-	return base.Mul(base, order.Volume)
-}
-
 func calculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	// Assumes 30-day $250,001 - $500,000 volume
 	// https://www.kraken.com/en-us/features/fee-schedule
@@ -114,7 +97,7 @@ func calculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *
 		currentOrder := book[i]
 
 		totalCryptoVolume.Add(totalCryptoVolume, currentOrder.Volume)
-		totalFiatVolume.Add(totalFiatVolume, getOrderCost(currentOrder))
+		totalFiatVolume.Add(totalFiatVolume, utils.GetOrderCost(currentOrder))
 
 		orVol := currentOrder.Volume
 		loc := big.NewFloat(0.0).Mul(currentOrder.Price, orVol)
@@ -156,7 +139,7 @@ func GetCryptoPayoutForBook(book []ex.OrderItem, total *big.Float) (*big.Float, 
 	return calculateCryptoPayout(book, total)
 }
 
-func GetKrakenBook() *krakenapi.OrderBook {
+func GetOrderBook() (*ex.Orderbook, error) {
 	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 
 	krakenBook, err := api.Depth(krakenapi.XXBTZUSD, 200)
@@ -164,7 +147,24 @@ func GetKrakenBook() *krakenapi.OrderBook {
 		log.Fatal(err)
 	}
 
-	return krakenBook
+	itemArrayAsks := []ex.OrderItem{}
+	itemArrayBids := []ex.OrderItem{}
+
+	for i, _ := range krakenBook.Asks {
+		// Parsing ASK order @ i
+		v := krakenBook.Asks[i]
+		item := ex.OrderItem{Price: big.NewFloat(v.Price), Volume: big.NewFloat(v.Amount)}
+
+		itemArrayAsks = append(itemArrayAsks, item)
+
+		// Parsing BID order @ i
+		v = krakenBook.Bids[i]
+		item = ex.OrderItem{Price: big.NewFloat(v.Price), Volume: big.NewFloat(v.Amount)}
+
+		itemArrayBids = append(itemArrayBids, item)
+	}
+
+	return &ex.Orderbook{Asks: itemArrayAsks, Bids: itemArrayBids}, nil
 }
 
 // Takes a target amount of fiat currency and returns the amount of crypto that it can buy
@@ -172,6 +172,6 @@ func GetCryptoPayout(total *big.Float) (*big.Float, *big.Float, int, *big.Float,
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
 
-	book := AdaptOrderbook(GetKrakenBook().Asks)
-	return calculateCryptoPayout(book, total)
+	raw_book, _ := GetOrderBook()
+	return calculateCryptoPayout(raw_book.Asks, total)
 }
