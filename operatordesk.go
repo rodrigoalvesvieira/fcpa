@@ -90,6 +90,8 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 		fmt.Print("RESPONSE TIME (THREADS): ")
 		fmt.Println(nsec)
 
+		res.Time = nsec
+
 		*book = *res
 		return nil
 	}
@@ -157,6 +159,9 @@ func processArbitrage(books []ex.Orderbook) {
 	cyan.Println("BTCTURK TOTAL BOOK VOLUME " + btcTurkBookCrypto.String())
 	cyan.Println("BTCTURK TOTAL BOOK LENGTH " + strconv.Itoa(btcTurkBookCount))
 	cyan.Println("BTCTURK TOTAL BOOK FIAT   " + formatcurrency.PrintUSD(btcTurkBookFiat))
+
+	timeseries.InsertEntry(1, 3, 1, 3, krakenBook.Time, orderCount, fiatIn, cryptoOut)
+	timeseries.InsertEntry(1, 3, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut)
 }
 
 func main() {
@@ -175,6 +180,4 @@ func main() {
 	}
     	RunAsyncAllowErrors(funcs...)
 	processArbitrage([]ex.Orderbook{book1, book2})
-
-	timeseries.Connect()
 }

@@ -17,4 +17,5 @@ type Orderbook struct {
 	FiatName Fiat
 	Asks     []OrderItem
 	Bids     []OrderItem
+	Time     int64
 }

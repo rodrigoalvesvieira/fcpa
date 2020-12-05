@@ -41,7 +41,7 @@ INSERT INTO exchanges(exchange, name) VALUES
 CREATE TABLE IF NOT EXISTS "price_queries"(
     coin INTEGER NOT NULL,
     tier INTEGER NOT NULL,
-    crypto_input DECIMAL NOT NULL,
+    crypto_input DECIMAL,
     exchange INTEGER NOT NULL,
     exchange_coin INTEGER NOT NULL,
     query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -61,3 +61,7 @@ CREATE TABLE IF NOT EXISTS "price_queries"(
 );
 
 -- SELECT * FROM tiers INNER JOIN coins ON coins.coin = tiers.coin WHERE coins.code = 'USD';
+
+-- SELECT buy_input, buy_vol, buy_order_count, query_time, created_at FROM price_queries WHERE tier = 3 AND exchange = 2 ORDER BY created_at DESC LIMIT 1;
+
+-- SELECT buy_input, buy_vol, buy_order_count, query_time, created_at FROM price_queries WHERE tier = 3 AND exchange = 1 ORDER BY created_at DESC LIMIT 1;
