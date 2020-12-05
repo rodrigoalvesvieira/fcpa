@@ -6,7 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/beldur/kraken-go-api-client"
 	"github.com/ajph/bitstamp-go"
-	"github.com/rodrigoalvesvieira/operatordesk/envars"
+	"operatordesk/envars"
 	"github.com/joho/godotenv"
 	"math/big"
 	"encoding/json"

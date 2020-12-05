@@ -9,12 +9,15 @@ import (
 	"time"
 	"strconv"
 	"github.com/fatih/color"
-	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
-	"github.com/rodrigoalvesvieira/operatordesk/btcturk"
-	"github.com/rodrigoalvesvieira/operatordesk/kraken"
-	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
-	_ "github.com/rodrigoalvesvieira/operatordesk/startup"
+	"operatordesk/formatcurrency"
+	"operatordesk/btcturk"
+	"operatordesk/kraken"
+	"operatordesk/timeseries"
+	ex "operatordesk/exchange"
+	//_ "github.com/rodrigoalvesvieira/operatordesk/startup"
 )
+
+// export GOPRIVATE=github.com/rodrigoalvesvieira
 
 // Alias for a function that takes no args and returns an error
 type GenericFunction func() error
@@ -172,4 +175,6 @@ func main() {
 	}
     	RunAsyncAllowErrors(funcs...)
 	processArbitrage([]ex.Orderbook{book1, book2})
+
+	timeseries.Connect()
 }

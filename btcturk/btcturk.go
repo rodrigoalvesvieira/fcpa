@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/fatih/color"
-	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
-	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
-	"github.com/rodrigoalvesvieira/operatordesk/utils"
+	ex "operatordesk/exchange"
+	"operatordesk/formatcurrency"
+	"operatordesk/utils"
 )
 
 type OrderBookResp struct {

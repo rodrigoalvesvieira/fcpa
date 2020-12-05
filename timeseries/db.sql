@@ -20,6 +20,16 @@ INSERT INTO coins(coin, code, name) VALUES
 (3, 'USD', 'United States Dollar'),
 (4, 'TRY', 'Turkish Lira');
 
+CREATE TABLE IF NOT EXISTS "tiers"(
+    id INTEGER,
+    coin INTEGER,
+    amount DECIMAL
+);
+INSERT INTO tiers(id, coin, amount) VALUES
+(1, 3, 10000),
+(2, 3, 100000),
+(3, 3, 500000);
+
 CREATE TABLE IF NOT EXISTS "exchanges"(
     exchange INTEGER,
     name TEXT
@@ -28,37 +38,26 @@ INSERT INTO exchanges(exchange, name) VALUES
 (1, 'Kraken'),
 (2, 'BTCTurk');
 
-CREATE TABLE "price_queries"(
-    coin INTEGER,
-    exchange_a INTEGER,
-    exchange_b INTEGER,
-    exchange_a_coin INTEGER,
-    exchange_b_coin INTEGER,
-    exchange_a_query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    exchange_b_query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    exchange_a_tier_1_input DECIMAL,
-    exchange_a_tier_1_order_count INTEGER,
-    exchange_a_tier_1_vol DECIMAL,
-    exchange_b_tier_1_input DECIMAL,
-    exchange_b_tier_1_order_count INTEGER,
-    exchange_b_tier_1_vol DECIMAL,
-    exchange_a_tier_2_input DECIMAL,
-    exchange_a_tier_2_order_count INTEGER,
-    exchange_a_tier_2_vol DECIMAL,
-    exchange_b_tier_2_input DECIMAL,
-    exchange_b_tier_2_order_count INTEGER,
-    exchange_b_tier_2_vol DECIMAL,
-    exchange_a_tier_3_input DECIMAL,
-    exchange_a_tier_3_order_count INTEGER,
-    exchange_a_tier_3_vol DECIMAL,
-    exchange_b_tier_3_input DECIMAL,
-    exchange_b_tier_3_order_count INTEGER,
-    exchange_b_tier_3_vol DECIMAL,
-    kraken_total_book_length NUMERIC,
-    kraken_total_book_crypto DECIMAL,
-    kraken_total_book_fiat DECIMAL,
-    btcturk_total_book_length NUMERIC,
-    btcturk_total_book_crypto DECIMAL,
-    btcturk_total_book_fiat DECIMAL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+CREATE TABLE IF NOT EXISTS "price_queries"(
+    coin INTEGER NOT NULL,
+    tier INTEGER NOT NULL,
+    crypto_input DECIMAL NOT NULL,
+    exchange INTEGER NOT NULL,
+    exchange_coin INTEGER NOT NULL,
+    query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    buy_input DECIMAL,
+    buy_order_count INTEGER,
+    buy_vol DECIMAL,
+    sell_input DECIMAL,
+    sell_order_count INTEGER,
+    sell_vol DECIMAL,
+    buy_total_book_length NUMERIC,
+    buy_total_book_crypto DECIMAL,
+    buy_total_book_fiat DECIMAL,
+    sell_total_book_length NUMERIC,
+    sell_total_book_crypto DECIMAL,
+    sell_total_book_fiat DECIMAL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
 );
+
+-- SELECT * FROM tiers INNER JOIN coins ON coins.coin = tiers.coin WHERE coins.code = 'USD';

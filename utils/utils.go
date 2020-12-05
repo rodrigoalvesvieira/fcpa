@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"math/big"
-	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
+	ex "operatordesk/exchange"
 )
 
 func SubtractFee(volume *big.Float, fee *big.Float) *big.Float {

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rodrigoalvesvieira/operatordesk/envars"
+	"operatordesk/envars"
 )
 
 // SendMessage receives a phone number

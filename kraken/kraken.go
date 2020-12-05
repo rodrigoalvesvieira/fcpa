@@ -7,10 +7,10 @@ import (
 	"strconv"
 	krakenapi "github.com/beldur/kraken-go-api-client"
 	"github.com/fatih/color"
-	"github.com/rodrigoalvesvieira/operatordesk/envars"
-	ex "github.com/rodrigoalvesvieira/operatordesk/exchange"
-	"github.com/rodrigoalvesvieira/operatordesk/formatcurrency"
-	"github.com/rodrigoalvesvieira/operatordesk/utils"
+	ex "operatordesk/exchange"
+	"operatordesk/formatcurrency"
+	"operatordesk/utils"
+	"operatordesk/envars"
 )
 
 func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
