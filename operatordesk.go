@@ -120,14 +120,14 @@ func processArbitrage(books []ex.Orderbook) {
 	magenta.Println("KRAKEN TOTAL FIAT         " + formatcurrency.PrintUSD(fiatInT1))
 	magenta.Println("KRAKEN TOTAL VOLUME       " + cryptoOutT1.String())
 
-	cryptoIn, fiatOut, btcTurkOrderCount, btcTurkBookCrypto, btcTurkBookFiat,  btcTurkBookCount := btcturk.GetFiatPayoutForBook(btcTurkBook.Bids, cryptoOutT1)
+	cryptoIn, fiatOut, btcTurkOrderCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkBookCount := btcturk.GetFiatPayoutForBook(btcTurkBook.Bids, cryptoOutT1)
 	yellow.Println("QUERYING " + formatcurrency.PrintUSD(usdInTier1) + " " + cryptoOutT1.String())
 	yellow.Println("BTCTURK TOTAL TRAVERSED   " + strconv.Itoa(btcTurkOrderCount))
 	yellow.Println("BTCTURK TOTAL FIAT        " + formatcurrency.PrintTRY(fiatOut))
 	yellow.Println("BTCTURK TOTAL VOLUME      " + cryptoIn.String())
 
-	timeseries.InsertEntry(1, 1, 1, 3, krakenBook.Time, orderCountT1, fiatInT1, cryptoOutT1, bookCount, bookCrypto, bookFiat)
-	timeseries.InsertEntry(1, 3, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat)
+	timeseries.InsertEntry(1, 1, 1, 3, krakenBook.Time, orderCountT1, fiatInT1, cryptoOutT1, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat)
+	timeseries.InsertEntry(1, 3, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat)
 
 	fmt.Println("QUERYING " + formatcurrency.PrintUSD(usdInTier2))
 	cryptoOutT2, fiatInT2, orderCountT2, _, _, _ := kraken.GetCryptoPayoutForBook(krakenBook.Asks, usdInTier2)
@@ -142,8 +142,8 @@ func processArbitrage(books []ex.Orderbook) {
 	yellow.Println("BTCTURK TOTAL FIAT        " + formatcurrency.PrintTRY(fiatOut))
 	yellow.Println("BTCTURK TOTAL VOLUME      " + cryptoIn.String())
 
-	timeseries.InsertEntry(1, 2, 1, 3, krakenBook.Time, orderCountT2, fiatInT2, cryptoOutT2, bookCount, bookCrypto, bookFiat)
-	timeseries.InsertEntry(1, 2, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat)
+	timeseries.InsertEntry(1, 2, 1, 3, krakenBook.Time, orderCountT2, fiatInT2, cryptoOutT2, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat)
+	timeseries.InsertEntry(1, 2, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat)
 
 	fmt.Println("QUERYING " + formatcurrency.PrintUSD(usdInTier3))
 	cryptoOutT3, fiatInT3, orderCountT3, _, _, _ := kraken.GetCryptoPayoutForBook(krakenBook.Asks, usdInTier3)
@@ -166,8 +166,8 @@ func processArbitrage(books []ex.Orderbook) {
 	cyan.Println("BTCTURK TOTAL BOOK LENGTH " + strconv.Itoa(btcTurkBookCount))
 	cyan.Println("BTCTURK TOTAL BOOK FIAT   " + formatcurrency.PrintUSD(btcTurkBookFiat))
 
-	timeseries.InsertEntry(1, 3, 1, 3, krakenBook.Time, orderCountT3, fiatInT3, cryptoOutT3, bookCount, bookCrypto, bookFiat)
-	timeseries.InsertEntry(1, 3, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat)
+	timeseries.InsertEntry(1, 3, 1, 3, krakenBook.Time, orderCountT3, fiatInT3, cryptoOutT3, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat)
+	timeseries.InsertEntry(1, 3, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat)
 }
 
 func main() {
