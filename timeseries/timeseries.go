@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, query_time int64, count int, input *big.Float, vol *big.Float) {
+func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, query_time int64, count int, input *big.Float, vol *big.Float, b_book_len int, b_total_book_crypto *big.Float, b_total_book_fiat *big.Float) {
 	ctx := context.Background()
 	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
 	dbpool, dbpoolerr := pgxpool.Connect(ctx, connStr)
@@ -23,10 +23,10 @@ func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, qu
 
 	s := &pgtype.Timestamp{Time: time.Unix(0, query_time).UTC(), Status: pgtype.Present}
 
-	insert := `INSERT INTO price_queries (coin, tier, exchange, exchange_coin, query_time, buy_order_count, buy_input, buy_vol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+	insert := `INSERT INTO price_queries (coin, tier, exchange, exchange_coin, query_time, buy_order_count, buy_input, buy_vol, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`
 
 	//Execute INSERT command
-	_, err := dbpool.Exec(ctx, insert, coin, tier, exchange, exchange_coin, s, count, input.String(), vol.String())
+	_, err := dbpool.Exec(ctx, insert, coin, tier, exchange, exchange_coin, s, count, input.String(), vol.String(), b_book_len, b_total_book_crypto.String(), b_total_book_fiat.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to insert data into database: %v\n", err)
 		os.Exit(1)
