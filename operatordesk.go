@@ -97,7 +97,15 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 	}
 }
 
-func processArbitrage(books []ex.Orderbook) {
+func processArbitrageBuyBTCTurkSellKraken(books []ex.Orderbook) {
+	green := color.New(color.FgGreen, color.Bold)
+	green.Println("INPUT TRY OUTPUT USD")
+}
+
+func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook) {
+	green := color.New(color.FgGreen, color.Bold)
+	green.Println("INPUT USD OUTPUT TRY")
+
 	krakenBook := books[0]
 	btcTurkBook := books[1]
 
@@ -172,9 +180,7 @@ func processArbitrage(books []ex.Orderbook) {
 
 func main() {
 	green := color.New(color.FgGreen, color.Bold)
-
 	green.Println("FIAT-CRYPTO PARITY ARBITRAGE DESK")
-	green.Println("INPUT USD OUTPUT TRY")
 
 	green.Println("-------------------------------------------\n")
 
@@ -185,5 +191,5 @@ func main() {
 		makeRequest(btcturk.GetOrderBook, &book2),
 	}
     	RunAsyncAllowErrors(funcs...)
-	processArbitrage([]ex.Orderbook{book1, book2})
+	processArbitrageBuyKrakenSellBTCTurk([]ex.Orderbook{book1, book2})
 }
