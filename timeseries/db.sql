@@ -27,8 +27,10 @@ CREATE TABLE IF NOT EXISTS "tiers"(
 );
 INSERT INTO tiers(id, coin, amount) VALUES
 (1, 3, 10000),
-(2, 3, 100000),
-(3, 3, 500000);
+(2, 3, 50000),
+(3, 3, 100000);
+(4, 3, 250000);
+(5, 3, 500000);
 
 CREATE TABLE IF NOT EXISTS "exchanges"(
     exchange INTEGER,

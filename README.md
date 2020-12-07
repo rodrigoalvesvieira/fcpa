@@ -38,7 +38,8 @@ $ go run operatordesk.go
 Using [VisiData]:
 
 ```sql
-\copy (SELECT * FROM price_queries) to '/Users/rodrigo/src/src/github.com/rodrigoalvesvieira/operatordesk/extract.csv' with csv
+
+\copy (SELECT * FROM price_queries ORDER BY created_at DESC) to '/Users/rodrigo/src/src/github.com/rodrigoalvesvieira/operatordesk/extract.csv' with csv header;
 ```
 
 ```sh
