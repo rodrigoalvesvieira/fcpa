@@ -33,6 +33,18 @@ $ go run operatordesk.go
 | Kraken            | BTC                         | Pending      |                        |
 | BTCTurk           | BTC                         | Pending      |                        |
 
+## More
+
+Using [VisiData]:
+
+```sql
+\copy (SELECT * FROM price_queries) to '/Users/rodrigo/src/src/github.com/rodrigoalvesvieira/operatordesk/extract.csv' with csv
+```
+
+```sh
+$ vd extract.csv
+```
+
 ## Authors
 
 * Rodrigo Alves Vieira - <<rodrigoalvesvieira@protonmail.com>>
@@ -46,3 +58,5 @@ $ go run operatordesk.go
 ## Copyright
 
 © 2018-2020 Rodrigo Alves Vieira. All Rights Reserved.
+
+[VisiData]: https://www.visidata.org/
