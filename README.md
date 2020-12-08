@@ -3,7 +3,7 @@
 
 ![The arbitrageurs](https://i.imgur.com/Pf5AZFX.jpg)
 
-## Technologies & Services
+## Technologies
 
 | Name                   | Version     |
 | ---------------------- | -----------:|
@@ -14,10 +14,6 @@
 
 ## Up & Running
 
-### Installing Dependencies
-
-```shell
-$ dep ensure
 ```
 
 ### How it Works
@@ -50,7 +46,7 @@ $ vd extract.csv
 
 * Rodrigo Alves Vieira - <<rodrigoalvesvieira@protonmail.com>>
 
-## RESEARCH
+## Research
 
 * https://data.bitcoinity.org/markets/volume/30d?c=e&t=b
 

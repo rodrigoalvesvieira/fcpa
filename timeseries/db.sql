@@ -18,7 +18,10 @@ INSERT INTO coins(coin, code, name) VALUES
 (1, 'BTC', 'Bitcoin'),
 (2, 'ETH', 'Ethereum'),
 (3, 'USD', 'United States Dollar'),
-(4, 'TRY', 'Turkish Lira');
+(4, 'TRY', 'Turkish Lira'),
+(5, 'GBP', 'British Pound'),
+(6, 'JPY', 'Japanese Yen'),
+(7, 'AED', 'United Arab Emirates dirham');
 
 CREATE TABLE IF NOT EXISTS "tiers"(
     id INTEGER,
@@ -67,3 +70,5 @@ CREATE TABLE IF NOT EXISTS "price_queries"(
 -- SELECT buy_input, buy_vol, buy_order_count, query_time, created_at FROM price_queries WHERE tier = 3 AND exchange = 2 ORDER BY created_at DESC LIMIT 1;
 
 -- SELECT buy_input, buy_vol, buy_order_count, query_time, created_at FROM price_queries WHERE tier = 3 AND exchange = 1 ORDER BY created_at DESC LIMIT 1;
+
+-- SELECT buy_input, buy_vol, buy_order_count, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat, sell_total_book_length, sell_total_book_crypto, sell_total_book_fiat, query_time, created_at FROM price_queries WHERE tier = 2 AND exchange = 1 ORDER BY created_at DESC LIMIT 1;
