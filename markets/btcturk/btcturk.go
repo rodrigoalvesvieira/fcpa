@@ -209,55 +209,20 @@ func GetFiatPayout(targetVolume *big.Float) *big.Float {
 	return aggregate
 }
 
+// GetFiatPayoutForBook takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
 func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	// Assumes 1-5M TRY 30-day volume
 	// https://pro.btcturk.com/en/help/fees
 	takerFee := big.NewFloat(0.0016)
-	aggregate := big.NewFloat(0.0)
-	aggregateVol := big.NewFloat(0.0)
-	totalCryptoVolume := big.NewFloat(0.0)
-	totalFiatVolume := big.NewFloat(0.0)
 
-	orderCount := 0
-	i := 0
-
-	for i = 0; i < len(book); i++ {
-		currentOrder := book[i]
-		totalCryptoVolume.Add(totalCryptoVolume, currentOrder.Volume)
-		totalFiatVolume.Add(totalFiatVolume, utils.GetOrderCost(currentOrder))
-
-		if aggregateVol.Cmp(targetVolume) < 0 {
-			orderCount += 1
-			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
-
-			if aheadAggregate.Cmp(targetVolume) > 0 {
-				rem := big.NewFloat(0.0).Copy(targetVolume)
-				rem.Sub(rem, aggregateVol)
-
-				// We need less than the volume of the current entry to satisfy our target
-				// Calculating remaining volume to satisfy target
-				remFiat := big.NewFloat(0.0).Copy(rem)
-				remFiat.Mul(remFiat, currentOrder.Volume)
-
-				realFiat := utils.SubtractFee(remFiat, takerFee)
-				aggregate.Add(aggregate, realFiat)
-
-				aggregateVol.Add(aggregateVol, rem)
-			} else {
-				fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
-				fiatPayout.Mul(fiatPayout, currentOrder.Volume)
-
-				realFiat := utils.SubtractFee(fiatPayout, takerFee)
-				aggregate.Add(aggregate, realFiat)
-
-				aggregateVol.Add(aggregateVol, currentOrder.Volume)
-			}
-		}
-	}
-
-	return aggregateVol, aggregate, orderCount, totalCryptoVolume, totalFiatVolume, i
+	return kraken.CalculateFiatPayout(book, targetVolume, takerFee)
 }
 
+// GetCryptoPayoutForBook takes a target amount of fiat and returns the amount of crypto currency that you can sell it for
 func GetCryptoPayoutForBook(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
-	return kraken.CalculateCryptoPayout(book, total)
+	// Assumes 1-5M TRY 30-day volume
+	// https://pro.btcturk.com/en/help/fees
+	takerFee := big.NewFloat(0.0016)
+
+	return kraken.CalculateCryptoPayout(book, total, takerFee)
 }

@@ -10,6 +10,7 @@ import (
 	"fcpa/markets/kraken"
 	ts "fcpa/timeseries"
 	"fmt"
+	"math/big"
 	"runtime/debug"
 	"strconv"
 	"sync"
@@ -118,6 +119,11 @@ func processArbitrageBuyBTCTurkSellKraken(books []ex.Orderbook, tiers ts.Result)
 		P("yellow", "KRAKEN TOTAL TRAVERSED   "+strconv.Itoa(krakenOrderCount))
 		P("yellow", "KRAKEN TOTAL FIAT        "+formatcurrency.PrintUSD(fiatOut))
 		P("yellow", "KRAKEN TOTAL VOLUME      "+cryptoIn.String())
+
+		exchangerate := big.NewFloat(0.0).Copy(fiatOut)
+		exchangerate.Quo(exchangerate, fiatIn)
+
+		P("higreen", "EXCHANGE RATE "+formatcurrency.PrintUSD(exchangerate))
 	}
 }
 
@@ -154,7 +160,12 @@ func P(colorName string, message string) {
 	}
 
 	printer := color.New(colorOption, option)
-	printer.Println(message)
+
+	if colorName == "higreen" {
+		color.HiGreen(message)
+	} else {
+		printer.Println(message)
+	}
 
 	// .Add(color.Underline)
 }
@@ -182,6 +193,11 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook, tiers ts.Result)
 		P("yellow", "BTCTURK TOTAL FIAT        "+formatcurrency.PrintTRY(fiatOut))
 		P("yellow", "BTCTURK TOTAL VOLUME      "+cryptoIn.String())
 
+		exchangerate := big.NewFloat(0.0).Copy(fiatOut)
+		exchangerate.Quo(exchangerate, fiatIn)
+
+		P("higreen", "EXCHANGE RATE "+formatcurrency.PrintTRY(exchangerate))
+
 		ts.InsertEntry(1, id, 1, 3, krakenBook.Time, orderCount, fiatIn, cryptoOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
 
 		ts.InsertEntry(1, id, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
@@ -196,7 +212,7 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook, tiers ts.Result)
 	}
 }
 
-func fetchResults(_ ts.Result, trytiers ts.Result) {
+func fetchResults(usdtiers ts.Result, trytiers ts.Result) {
 	P("green", "FIAT-CRYPTO PARITY ARBITRAGE DESK")
 	P("green", "-------------------------------------------\n")
 
@@ -207,7 +223,7 @@ func fetchResults(_ ts.Result, trytiers ts.Result) {
 		makeRequest(btcturk.GetOrderBook, &book2),
 	}
 	RunAsyncAllowErrors(funcs...)
-	//processArbitrageBuyKrakenSellBTCTurk([]ex.Orderbook{book1, book2}, usdtiers)
+	processArbitrageBuyKrakenSellBTCTurk([]ex.Orderbook{book1, book2}, usdtiers)
 	processArbitrageBuyBTCTurkSellKraken([]ex.Orderbook{book1, book2}, trytiers)
 }
 

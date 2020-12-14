@@ -8,7 +8,6 @@ import (
 	"math/big"
 
 	krakenapi "github.com/beldur/kraken-go-api-client"
-	"github.com/fatih/color"
 )
 
 func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
@@ -20,11 +19,8 @@ func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
 	return itemArray
 }
 
-// GetFiatPayoutForBook takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
-func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
-	// Assumes 30-day $250,001 - $500,000 volume
-	// https://www.kraken.com/en-us/features/fee-schedule
-	takerFee := big.NewFloat(0.002)
+// CalculateFiatPayout returns
+func CalculateFiatPayout(book []ex.OrderItem, targetVolume *big.Float, takerFee *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	aggregateFiat := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
 
@@ -71,10 +67,7 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 }
 
 // CalculateCryptoPayout returns the total amount in crypto
-func CalculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
-	// Assumes 30-day $250,001 - $500,000 volume
-	// https://www.kraken.com/en-us/features/fee-schedule
-	takerFee := big.NewFloat(0.002)
+func CalculateCryptoPayout(book []ex.OrderItem, total *big.Float, takerFee *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	zero := big.NewFloat(0.0)
 	aggregate := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
@@ -125,9 +118,19 @@ func CalculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *
 
 }
 
+// GetFiatPayoutForBook takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
+func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
+	// Assumes 30-day $250,001 - $500,000 volume
+	// https://www.kraken.com/en-us/features/fee-schedule
+	takerFee := big.NewFloat(0.002)
+
+	return CalculateFiatPayout(book, targetVolume, takerFee)
+}
+
 // GetCryptoPayoutForBook calls CalculateCryptoPayout
 func GetCryptoPayoutForBook(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
-	return CalculateCryptoPayout(book, total)
+	takerFee := big.NewFloat(0.002)
+	return CalculateCryptoPayout(book, total, takerFee)
 }
 
 // GetOrderBook fetches the order book
@@ -161,9 +164,8 @@ func GetOrderBook() (*ex.Orderbook, error) {
 
 // GetCryptoPayout takes a target amount of fiat currency and returns the amount of crypto that it can buy
 func GetCryptoPayout(total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
-	printer := color.New(color.FgGreen, color.Bold)
-	printer.Println("GETTING ORDER BOOK - KRAKEN")
+	takerFee := big.NewFloat(0.002)
 
 	rawbook, _ := GetOrderBook()
-	return CalculateCryptoPayout(rawbook.Asks, total)
+	return CalculateCryptoPayout(rawbook.Asks, total, takerFee)
 }
