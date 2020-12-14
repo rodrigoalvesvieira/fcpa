@@ -3,7 +3,7 @@ package clockwork
 import "time"
 
 func Start(fn func()) {
-	cycle_time := time.Second * 60  //* 2
+	cycle_time := time.Second * 60 / 12 //* 2
 	ticker := time.NewTicker(cycle_time)
 
 	defer ticker.Stop()

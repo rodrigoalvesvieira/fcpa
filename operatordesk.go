@@ -97,6 +97,16 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 
 func processArbitrageBuyBTCTurkSellKraken(books []ex.Orderbook) {
 	P("green", "INPUT TRY OUTPUT USD")
+
+	tiers, _ := timeseries.GetTiers(4)
+
+	for i := 0; i < len(tiers.Values); i++ {
+		tier := tiers.Values[i]
+		//id := tiers.Ids[i]
+
+		P("red", "QUERYING " + formatcurrency.PrintUSD(tier))
+
+	}
 }
 
 func Pln(message string) {
@@ -143,7 +153,7 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook) {
 	krakenBook := books[0]
 	btcTurkBook := books[1]
 
-	tiers, _ := timeseries.GetTiers()
+	tiers, _ := timeseries.GetTiers(3)
 
 	for i := 0; i < len(tiers.Values); i++ {
 		tier := tiers.Values[i]
@@ -163,6 +173,7 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook) {
 		P("yellow", "BTCTURK TOTAL VOLUME      " + cryptoIn.String())
 
 		timeseries.InsertEntry(1, id, 1, 3, krakenBook.Time, orderCount, fiatIn, cryptoOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
+
 		timeseries.InsertEntry(1, id, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
 
 		P("cyan", "KRAKEN TOTAL BOOK VOLUME  " + bookCrypto.String())
@@ -186,7 +197,8 @@ func fetchResults() {
 		makeRequest(btcturk.GetOrderBook, &book2),
 	}
     	RunAsyncAllowErrors(funcs...)
-	processArbitrageBuyKrakenSellBTCTurk([]ex.Orderbook{book1, book2})
+	//processArbitrageBuyKrakenSellBTCTurk([]ex.Orderbook{book1, book2})
+	processArbitrageBuyBTCTurkSellKraken([]ex.Orderbook{book1, book2})
 }
 
 func main() {

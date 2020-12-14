@@ -7,6 +7,10 @@ func IsProduction() bool {
 	return p == "1"
 }
 
+func GetDBUrl() string {
+	return os.Getenv("DATABASE_URL")
+}
+
 // GetTwilioEnvVar returns the Twilio Api Key
 func GetTwilioEnvVar() string {
 	return os.Getenv("TWILIO_API_KEY")

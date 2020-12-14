@@ -59,7 +59,7 @@ type Result struct {
 	Values []*big.Float
 }
 
-func GetTiers() (Result, error) {
+func GetTiers(coin int64) (Result, error) {
 	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
 
 	conn, err := pgx.Connect(context.Background(), connStr)
@@ -74,7 +74,7 @@ func GetTiers() (Result, error) {
 	var ids []int64
 	var result []*big.Float
 
-	rows, rowsErr := conn.Query(context.Background(), "SELECT id, amount FROM tiers WHERE active = TRUE")
+	rows, rowsErr := conn.Query(context.Background(), "SELECT id, amount FROM tiers WHERE active = TRUE AND coin = $1", &coin)
 	if rowsErr != nil {
 		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", rowsErr)
 		os.Exit(1)
