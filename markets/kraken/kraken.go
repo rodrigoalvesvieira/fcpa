@@ -20,15 +20,12 @@ func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
 	return itemArray
 }
 
-// Takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
+// GetFiatPayoutForBook takes a target amount of crypto and returns the amount of fiat currency that you can sell it for
 func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
-	printer := color.New(color.FgBlue, color.Bold)
-	printer.Println("GETTING ORDER BOOK TO SELL CRYPTO - KRAKEN")
-
 	// Assumes 30-day $250,001 - $500,000 volume
 	// https://www.kraken.com/en-us/features/fee-schedule
 	takerFee := big.NewFloat(0.002)
-	aggregate := big.NewFloat(0.0)
+	aggregateFiat := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
 
 	totalCryptoVolume := big.NewFloat(0.0)
@@ -37,6 +34,9 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 	orderCount := 0
 	i := 0
 
+	var realFiat *big.Float
+	var fiatPayout *big.Float
+
 	for i = 0; i < len(book); i++ {
 		currentOrder := book[i]
 
@@ -44,8 +44,7 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 		totalFiatVolume.Add(totalFiatVolume, utils.GetOrderCost(currentOrder))
 
 		if aggregateVol.Cmp(targetVolume) < 0 {
-			orderCount += 1
-
+			orderCount++
 			aheadAggregate := big.NewFloat(0.0).Add(aggregateVol, currentOrder.Volume)
 
 			if aheadAggregate.Cmp(targetVolume) > 0 {
@@ -54,31 +53,31 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 
 				// We need less than the volume of the current entry to satisfy our target
 				// Calculating remaining volume to satisfy target
-				remFiat := big.NewFloat(0.0).Copy(rem)
-				remFiat.Mul(remFiat, currentOrder.Volume)
+				fiatPayout = big.NewFloat(0.0).Copy(rem)
+				fiatPayout.Mul(fiatPayout, currentOrder.Price)
 
-				realFiat := utils.SubtractFee(remFiat, takerFee)
-				aggregate.Add(aggregate, realFiat)
+				realFiat = utils.SubtractFee(fiatPayout, takerFee)
+
+				//aggregateFiat.Add(aggregateFiat, realFiat)
 				aggregateVol.Add(aggregateVol, rem)
-
-				break
 			} else {
-				fiatPayout := big.NewFloat(0.0).Copy(currentOrder.Price)
-				fiatPayout.Mul(fiatPayout, currentOrder.Volume)
+				fiatPayout = big.NewFloat(0.0).Copy(currentOrder.Volume)
+				fiatPayout.Mul(fiatPayout, currentOrder.Price)
 
-				realFiat := utils.SubtractFee(fiatPayout, takerFee)
-				aggregate.Add(aggregate, realFiat)
+				realFiat = utils.SubtractFee(fiatPayout, takerFee)
 
+				//aggregateFiat.Add(aggregateFiat, realFiat)
 				aggregateVol.Add(aggregateVol, currentOrder.Volume)
 			}
-		} else {
-			break
+
+			aggregateFiat.Add(aggregateFiat, realFiat)
 		}
 	}
 
-	return aggregateVol, aggregate, orderCount, totalCryptoVolume, totalFiatVolume, i
+	return aggregateVol, aggregateFiat, orderCount, totalCryptoVolume, totalFiatVolume, i
 }
 
+// CalculateCryptoPayout returns the total amount in crypto
 func CalculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	// Assumes 30-day $250,001 - $500,000 volume
 	// https://www.kraken.com/en-us/features/fee-schedule
@@ -103,7 +102,7 @@ func CalculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *
 		loc := big.NewFloat(0.0).Mul(currentOrder.Price, orVol)
 
 		if aggregate.Cmp(total) < 0 {
-			orderCount += 1
+			orderCount++
 			aheadAggregate := zero.Add(loc, aggregate)
 
 			if aheadAggregate.Cmp(total) > 0 {
@@ -133,10 +132,12 @@ func CalculateCryptoPayout(book []ex.OrderItem, total *big.Float) (*big.Float, *
 
 }
 
+// GetCryptoPayoutForBook calls CalculateCryptoPayout
 func GetCryptoPayoutForBook(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	return CalculateCryptoPayout(book, total)
 }
 
+// GetOrderBook fetches the order book
 func GetOrderBook() (*ex.Orderbook, error) {
 	api := krakenapi.New(envars.GetKrakenAPIKey(), envars.GetKrakenPrivateKey())
 
@@ -148,7 +149,7 @@ func GetOrderBook() (*ex.Orderbook, error) {
 	itemArrayAsks := []ex.OrderItem{}
 	itemArrayBids := []ex.OrderItem{}
 
-	for i, _ := range krakenBook.Asks {
+	for i := range krakenBook.Asks {
 		// Parsing ASK order @ i
 		v := krakenBook.Asks[i]
 		item := ex.OrderItem{Price: big.NewFloat(v.Price), Volume: big.NewFloat(v.Amount)}
@@ -165,11 +166,11 @@ func GetOrderBook() (*ex.Orderbook, error) {
 	return &ex.Orderbook{Asks: itemArrayAsks, Bids: itemArrayBids}, nil
 }
 
-// Takes a target amount of fiat currency and returns the amount of crypto that it can buy
+// GetCryptoPayout takes a target amount of fiat currency and returns the amount of crypto that it can buy
 func GetCryptoPayout(total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	printer := color.New(color.FgGreen, color.Bold)
 	printer.Println("GETTING ORDER BOOK - KRAKEN")
 
-	raw_book, _ := GetOrderBook()
-	return CalculateCryptoPayout(raw_book.Asks, total)
+	rawbook, _ := GetOrderBook()
+	return CalculateCryptoPayout(rawbook.Asks, total)
 }

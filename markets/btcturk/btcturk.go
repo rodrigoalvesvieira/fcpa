@@ -165,8 +165,8 @@ func GetFiatPayout(targetVolume *big.Float) *big.Float {
 	aggregate := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
 
-	raw_book, _ := GetOrderBook()
-	book := raw_book.Bids
+	rawbook, _ := GetOrderBook()
+	book := rawbook.Bids
 	i := 0
 
 	for i = 0; i < len(book); i++ {

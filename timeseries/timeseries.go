@@ -3,13 +3,18 @@ package timeseries
 import (
 	"context"
 	"fmt"
-	"os"
 	"math/big"
+	"os"
+	"time"
+
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/jackc/pgtype"
-	"time"
 )
+
+type PriceQuery struct {
+	query_time int64
+}
 
 func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, query_time int64, count int, input *big.Float, vol *big.Float, b_book_len int, b_total_book_crypto *big.Float, b_total_book_fiat *big.Float, s_book_len int, s_total_book_crypto *big.Float, s_total_book_fiat *big.Float, s_count int, s_vol *big.Float) {
 	ctx := context.Background()

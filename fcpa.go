@@ -18,7 +18,7 @@ import (
 	"github.com/fatih/color"
 )
 
-// Alias for a function that takes no args and returns an error
+// GenericFunction Alias for a function that takes no args and returns an error
 type GenericFunction func() error
 
 func RunAsyncAllowErrors(functions ...GenericFunction) []error {
@@ -87,7 +87,7 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 
 		nsec := time.Now().UnixNano()
 
-		Pln("RESPONSE TIME (THREADS): " + strconv.FormatInt(nsec, 10))
+		// Pln("RESPONSE TIME (THREADS): " + strconv.FormatInt(nsec, 10))
 
 		res.Time = nsec
 
