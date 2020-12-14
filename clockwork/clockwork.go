@@ -1,8 +1,12 @@
 package clockwork
 
-import "time"
+import (
+	"time"
+	ts "operatordesk/timeseries"
+)
 
-func Start(fn func()) {
+
+func Start(fn func(ts.Result, ts.Result), usdtiers ts.Result, trytiers ts.Result) {
 	cycle_time := time.Second * 60 / 12 //* 2
 	ticker := time.NewTicker(cycle_time)
 
@@ -17,7 +21,7 @@ func Start(fn func()) {
 		case <-done:
 			return
 		case <-ticker.C:
-			fn()
+			fn(usdtiers, trytiers)
 		}
 	}
 }
