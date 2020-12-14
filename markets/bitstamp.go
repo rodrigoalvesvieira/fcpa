@@ -1,16 +1,12 @@
 package bitstamp
 
 import (
-	"log"
+	"fcpa/envars"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/beldur/kraken-go-api-client"
+	"log"
+
 	"github.com/ajph/bitstamp-go"
-	"operatordesk/envars"
-	"github.com/joho/godotenv"
-	"math/big"
-	"encoding/json"
-	"io/ioutil"
+	"github.com/fatih/color"
 )
 
 func bitstampQuery(cl *color.Color) {

@@ -1,4 +1,4 @@
-module operatordesk
+module fcpa
 
 go 1.15
 

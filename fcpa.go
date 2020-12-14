@@ -2,19 +2,20 @@ package main
 
 import (
 	"bytes"
-	"runtime/debug"
-	"sync"
+	clock "fcpa/clockwork"
+	"fcpa/envars"
+	ex "fcpa/exchange"
+	"fcpa/formatcurrency"
+	"fcpa/markets/btcturk"
+	"fcpa/markets/kraken"
+	ts "fcpa/timeseries"
 	"fmt"
-	"time"
+	"runtime/debug"
 	"strconv"
+	"sync"
+	"time"
+
 	"github.com/fatih/color"
-	"operatordesk/formatcurrency"
-	"operatordesk/markets/btcturk"
-	"operatordesk/markets/kraken"
-	ts "operatordesk/timeseries"
-	"operatordesk/envars"
-	ex "operatordesk/exchange"
-	clock "operatordesk/clockwork"
 )
 
 // Alias for a function that takes no args and returns an error
@@ -105,18 +106,18 @@ func processArbitrageBuyBTCTurkSellKraken(books []ex.Orderbook, tiers ts.Result)
 		tier := tiers.Values[i]
 		//id := tiers.Ids[i]
 
-		P("red", "QUERYING " + formatcurrency.PrintTRY(tier))
+		P("red", "QUERYING "+formatcurrency.PrintTRY(tier))
 
 		cryptoOut, fiatIn, orderCount, _, _, _ := btcturk.GetCryptoPayoutForBook(btcTurkBook.Asks, tier)
 
-		P("magenta", "BTCTURK TOTAL TRAVERSED    " + strconv.Itoa(orderCount))
-		P("magenta", "BTCTURK TOTAL FIAT         " + formatcurrency.PrintTRY(fiatIn))
-		P("magenta", "BTCTURK TOTAL VOLUME       " + cryptoOut.String())
+		P("magenta", "BTCTURK TOTAL TRAVERSED    "+strconv.Itoa(orderCount))
+		P("magenta", "BTCTURK TOTAL FIAT         "+formatcurrency.PrintTRY(fiatIn))
+		P("magenta", "BTCTURK TOTAL VOLUME       "+cryptoOut.String())
 
 		cryptoIn, fiatOut, krakenOrderCount, _, _, _ := kraken.GetFiatPayoutForBook(krakenBook.Bids, cryptoOut)
-		P("yellow", "KRAKEN TOTAL TRAVERSED   " + strconv.Itoa(krakenOrderCount))
-		P("yellow", "KRAKEN TOTAL FIAT        " + formatcurrency.PrintUSD(fiatOut))
-		P("yellow", "KRAKEN TOTAL VOLUME      " + cryptoIn.String())
+		P("yellow", "KRAKEN TOTAL TRAVERSED   "+strconv.Itoa(krakenOrderCount))
+		P("yellow", "KRAKEN TOTAL FIAT        "+formatcurrency.PrintUSD(fiatOut))
+		P("yellow", "KRAKEN TOTAL VOLUME      "+cryptoIn.String())
 	}
 }
 
@@ -168,30 +169,30 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook, tiers ts.Result)
 		tier := tiers.Values[i]
 		id := tiers.Ids[i]
 
-		P("red", "QUERYING " + formatcurrency.PrintUSD(tier))
+		P("red", "QUERYING "+formatcurrency.PrintUSD(tier))
 
 		cryptoOut, fiatIn, orderCount, bookCrypto, bookFiat, bookCount := kraken.GetCryptoPayoutForBook(krakenBook.Asks, tier)
-		P("magenta", "KRAKEN TOTAL TRAVERSED    " + strconv.Itoa(orderCount))
-		P("magenta", "KRAKEN TOTAL FIAT         " + formatcurrency.PrintUSD(fiatIn))
-		P("magenta", "KRAKEN TOTAL VOLUME       " + cryptoOut.String())
+		P("magenta", "KRAKEN TOTAL TRAVERSED    "+strconv.Itoa(orderCount))
+		P("magenta", "KRAKEN TOTAL FIAT         "+formatcurrency.PrintUSD(fiatIn))
+		P("magenta", "KRAKEN TOTAL VOLUME       "+cryptoOut.String())
 
 		cryptoIn, fiatOut, btcTurkOrderCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkBookCount := btcturk.GetFiatPayoutForBook(btcTurkBook.Bids, cryptoOut)
-		P("yellow", "QUERYING " + formatcurrency.PrintUSD(tier) + " " + cryptoOut.String())
-		P("yellow", "BTCTURK TOTAL TRAVERSED   " + strconv.Itoa(btcTurkOrderCount))
-		P("yellow", "BTCTURK TOTAL FIAT        " + formatcurrency.PrintTRY(fiatOut))
-		P("yellow", "BTCTURK TOTAL VOLUME      " + cryptoIn.String())
+		P("yellow", "QUERYING "+formatcurrency.PrintUSD(tier)+" "+cryptoOut.String())
+		P("yellow", "BTCTURK TOTAL TRAVERSED   "+strconv.Itoa(btcTurkOrderCount))
+		P("yellow", "BTCTURK TOTAL FIAT        "+formatcurrency.PrintTRY(fiatOut))
+		P("yellow", "BTCTURK TOTAL VOLUME      "+cryptoIn.String())
 
 		ts.InsertEntry(1, id, 1, 3, krakenBook.Time, orderCount, fiatIn, cryptoOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
 
 		ts.InsertEntry(1, id, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
 
-		P("cyan", "KRAKEN TOTAL BOOK VOLUME  " + bookCrypto.String())
-		P("cyan", "KRAKEN TOTAL BOOK LENGTH  " + strconv.Itoa(bookCount))
-		P("cyan", "KRAKEN TOTAL BOOK FIAT    " + formatcurrency.PrintUSD(bookFiat))
+		P("cyan", "KRAKEN TOTAL BOOK VOLUME  "+bookCrypto.String())
+		P("cyan", "KRAKEN TOTAL BOOK LENGTH  "+strconv.Itoa(bookCount))
+		P("cyan", "KRAKEN TOTAL BOOK FIAT    "+formatcurrency.PrintUSD(bookFiat))
 
-		P("cyan", "BTCTURK TOTAL BOOK VOLUME " + btcTurkBookCrypto.String())
-		P("cyan", "BTCTURK TOTAL BOOK LENGTH " + strconv.Itoa(btcTurkBookCount))
-		P("cyan", "BTCTURK TOTAL BOOK FIAT   " + formatcurrency.PrintUSD(btcTurkBookFiat))
+		P("cyan", "BTCTURK TOTAL BOOK VOLUME "+btcTurkBookCrypto.String())
+		P("cyan", "BTCTURK TOTAL BOOK LENGTH "+strconv.Itoa(btcTurkBookCount))
+		P("cyan", "BTCTURK TOTAL BOOK FIAT   "+formatcurrency.PrintUSD(btcTurkBookFiat))
 	}
 }
 
@@ -202,10 +203,10 @@ func fetchResults(_ ts.Result, trytiers ts.Result) {
 	var book1 ex.Orderbook
 	var book2 ex.Orderbook
 	funcs := []GenericFunction{
-		makeRequest(kraken.GetOrderBook,  &book1),
+		makeRequest(kraken.GetOrderBook, &book1),
 		makeRequest(btcturk.GetOrderBook, &book2),
 	}
-    	RunAsyncAllowErrors(funcs...)
+	RunAsyncAllowErrors(funcs...)
 	//processArbitrageBuyKrakenSellBTCTurk([]ex.Orderbook{book1, book2}, usdtiers)
 	processArbitrageBuyBTCTurkSellKraken([]ex.Orderbook{book1, book2}, trytiers)
 }

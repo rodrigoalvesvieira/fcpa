@@ -1,13 +1,14 @@
 package kraken
 
 import (
+	"fcpa/envars"
+	ex "fcpa/exchange"
+	"fcpa/utils"
 	"log"
 	"math/big"
+
 	krakenapi "github.com/beldur/kraken-go-api-client"
 	"github.com/fatih/color"
-	ex "operatordesk/exchange"
-	"operatordesk/utils"
-	"operatordesk/envars"
 )
 
 func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {

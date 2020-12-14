@@ -35,7 +35,7 @@ Using [VisiData]:
 
 ```sql
 
-\copy (SELECT * FROM price_queries ORDER BY created_at DESC) to '/Users/rodrigo/src/src/github.com/rodrigoalvesvieira/operatordesk/extract.csv' with csv header;
+\copy (SELECT * FROM price_queries ORDER BY created_at DESC) to '/Users/rodrigo/src/src/github.com/rodrigoalvesvieira/fcpa/extract.csv' with csv header;
 ```
 
 ```sh

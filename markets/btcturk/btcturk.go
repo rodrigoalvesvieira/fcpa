@@ -2,17 +2,18 @@ package btcturk
 
 import (
 	"encoding/json"
+	ex "fcpa/exchange"
+	"fcpa/formatcurrency"
+	"fcpa/markets/kraken"
+	"fcpa/utils"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
 	"strconv"
+
 	"github.com/fatih/color"
-	ex "operatordesk/exchange"
-	"operatordesk/formatcurrency"
-	"operatordesk/utils"
-	"operatordesk/markets/kraken"
 )
 
 type OrderBookResp struct {
