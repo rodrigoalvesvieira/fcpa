@@ -1,8 +1,11 @@
 package envars
 
-import (
-	"os"
-)
+import "os"
+
+func IsProduction() bool {
+	p := os.Getenv("PRODUCTION")
+	return p == "1"
+}
 
 // GetTwilioEnvVar returns the Twilio Api Key
 func GetTwilioEnvVar() string {

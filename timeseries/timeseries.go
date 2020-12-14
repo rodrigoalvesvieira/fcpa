@@ -12,9 +12,6 @@ import (
 )
 
 func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, query_time int64, count int, input *big.Float, vol *big.Float, b_book_len int, b_total_book_crypto *big.Float, b_total_book_fiat *big.Float, s_book_len int, s_total_book_crypto *big.Float, s_total_book_fiat *big.Float, s_count int, s_vol *big.Float) {
-	fmt.Printf("TOTAL ");
-	fmt.Println(s_vol.String())
-
 	ctx := context.Background()
 	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
 	dbpool, dbpoolerr := pgxpool.Connect(ctx, connStr)
@@ -34,7 +31,6 @@ func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, qu
 		fmt.Fprintf(os.Stderr, "Unable to insert data into database: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Println("Inserted price query into database")
 }
 
 func Connect() {
@@ -56,4 +52,43 @@ func Connect() {
 	}
 
 	fmt.Println(coin, code)
+}
+
+type Result struct {
+	Ids    []int64
+	Values []*big.Float
+}
+
+func GetTiers() (Result, error) {
+	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
+
+	conn, err := pgx.Connect(context.Background(), connStr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	var id int64
+	var amount float64
+	var ids []int64
+	var result []*big.Float
+
+	rows, rowsErr := conn.Query(context.Background(), "SELECT id, amount FROM tiers WHERE active = TRUE")
+	if rowsErr != nil {
+		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", rowsErr)
+		os.Exit(1)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&id, &amount)
+		if err != nil {
+			return Result{}, err
+		}
+		ids = append(ids, id)
+		result = append(result, big.NewFloat(amount))
+	}
+
+	return Result{Ids: ids, Values: result}, nil
 }

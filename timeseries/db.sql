@@ -26,14 +26,15 @@ INSERT INTO coins(coin, code, name) VALUES
 CREATE TABLE IF NOT EXISTS "tiers"(
     id INTEGER,
     coin INTEGER,
-    amount DECIMAL
+    amount DECIMAL,
+    active BOOLEAN DEFAULT FALSE
 );
-INSERT INTO tiers(id, coin, amount) VALUES
-(1, 3, 10000),
-(2, 3, 50000),
-(3, 3, 100000);
-(4, 3, 250000);
-(5, 3, 500000);
+INSERT INTO tiers(id, coin, amount, active) VALUES
+(1, 3, 10000, true),
+(2, 3, 50000, true),
+(3, 3, 100000, true),
+(4, 3, 250000, true),
+(5, 3, 500000, false);
 
 CREATE TABLE IF NOT EXISTS "exchanges"(
     exchange INTEGER,

@@ -6,6 +6,7 @@ require (
 	github.com/ajph/bitstamp-go v0.0.0-20180531100631-da686669997a
 	github.com/beldur/kraken-go-api-client v0.0.0-20180126083054-8d8ccfe4cc60
 	github.com/fatih/color v1.7.0
+	github.com/go-kit/kit v0.10.0
 	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/jackc/pgtype v1.6.2
 	github.com/jackc/pgx/v4 v4.10.0
