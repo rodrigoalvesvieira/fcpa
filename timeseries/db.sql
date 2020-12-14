@@ -52,10 +52,12 @@ INSERT INTO exchanges(exchange, name) VALUES
 CREATE TABLE IF NOT EXISTS "price_queries"(
     coin INTEGER NOT NULL,
     tier INTEGER NOT NULL,
-    crypto_input DECIMAL,
-    exchange INTEGER NOT NULL,
-    exchange_coin INTEGER NOT NULL,
-    query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    exchange_buy INTEGER NOT NULL,
+    exchange_sell INTEGER NOT NULL,
+    exchange_buy_coin INTEGER NOT NULL,
+    exchange_sell_coin INTEGER NOT NULL,
+    exchange_buy_query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    exchange_sell_query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     buy_input DECIMAL,
     buy_order_count INTEGER,
     buy_vol DECIMAL,
@@ -68,6 +70,7 @@ CREATE TABLE IF NOT EXISTS "price_queries"(
     sell_total_book_length NUMERIC,
     sell_total_book_crypto DECIMAL,
     sell_total_book_fiat DECIMAL,
+    exchange_rate DECIMAL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
 );
 
@@ -78,3 +81,7 @@ CREATE TABLE IF NOT EXISTS "price_queries"(
 -- SELECT buy_input, buy_vol, buy_order_count, query_time, created_at FROM price_queries WHERE tier = 3 AND exchange = 1 ORDER BY created_at DESC LIMIT 1;
 
 -- SELECT buy_input, buy_vol, buy_order_count, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat, sell_total_book_length, sell_total_book_crypto, sell_total_book_fiat, query_time, created_at FROM price_queries WHERE tier = 2 AND exchange = 1 ORDER BY created_at DESC LIMIT 1;
+
+-- select pg_size_pretty(pg_relation_size('price_queries'));
+
+-- SELECT 1116 * 150;

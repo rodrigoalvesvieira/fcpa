@@ -10,15 +10,37 @@ import (
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"fcpa/envars"
 )
 
 type PriceQuery struct {
-	query_time int64
+	Coin int64
+	Tier int64
+	Exchange_buy int64
+	Exchange_sell int64
+	Exchange_buy_coin int64
+	Exchange_sell_coin int64
+	Buy_query_time int64
+	Sell_query_time int64
+	Buy_input *big.Float
+	Buy_count int
+	Buy_vol *big.Float
+	Sell_input *big.Float
+	Sell_count int
+	Sell_vol *big.Float
+	Buy_total_book_length int
+	Buy_total_book_crypto *big.Float
+	Buy_total_book_fiat *big.Float
+	Sell_total_book_length int
+	Sell_total_book_crypto *big.Float
+	Sell_total_book_fiat *big.Float
+	Exchange_rate *big.Float
 }
 
-func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, query_time int64, count int, input *big.Float, vol *big.Float, b_book_len int, b_total_book_crypto *big.Float, b_total_book_fiat *big.Float, s_book_len int, s_total_book_crypto *big.Float, s_total_book_fiat *big.Float, s_count int, s_vol *big.Float) {
+func InsertPriceQuery(entry *PriceQuery) {
 	ctx := context.Background()
-	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
+	connStr := envars.GetDBUrl()
 	dbpool, dbpoolerr := pgxpool.Connect(ctx, connStr)
 	if dbpoolerr != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", dbpoolerr)
@@ -26,37 +48,42 @@ func InsertEntry(coin int64, tier int64, exchange int64, exchange_coin int64, qu
 	}
 	defer dbpool.Close()
 
-	s := &pgtype.Timestamp{Time: time.Unix(0, query_time).UTC(), Status: pgtype.Present}
+	insert := `INSERT INTO price_queries (coin, tier, exchange_buy, exchange_sell, exchange_buy_coin,  exchange_sell_coin, exchange_buy_query_time, exchange_sell_query_time, buy_input, buy_order_count, buy_vol, sell_input, sell_order_count, sell_vol, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat, sell_total_book_length, sell_total_book_crypto, sell_total_book_fiat, exchange_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21);`
 
-	insert := `INSERT INTO price_queries (coin, tier, exchange, exchange_coin, query_time, buy_order_count, buy_input, buy_vol, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat, sell_total_book_length, sell_total_book_crypto, sell_total_book_fiat, sell_order_count, sell_vol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`
+	buyquerytime := &pgtype.Timestamp{Time: time.Unix(0, entry.Buy_query_time).UTC(), Status: pgtype.Present}
 
-	//Execute INSERT command
-	_, err := dbpool.Exec(ctx, insert, coin, tier, exchange, exchange_coin, s, count, input.String(), vol.String(), b_book_len, b_total_book_crypto.String(), b_total_book_fiat.String(), s_book_len, s_total_book_crypto.String(), s_total_book_fiat.String(), s_count, s_vol.String())
+	sellquerytime := &pgtype.Timestamp{Time: time.Unix(0, entry.Sell_query_time).UTC(), Status: pgtype.Present}
+
+	// Execute INSERT command
+	_, err := dbpool.Exec(
+		ctx,
+		insert,
+		entry.Coin,
+		entry.Tier,
+		entry.Exchange_buy,
+		entry.Exchange_sell,
+		entry.Exchange_buy_coin,
+		entry.Exchange_sell_coin,
+		buyquerytime,
+		sellquerytime,
+		entry.Buy_input.String(),
+		entry.Buy_count,
+		entry.Buy_vol.String(),
+		entry.Sell_input.String(),
+		entry.Sell_count,
+		entry.Sell_vol.String(),
+		entry.Buy_total_book_length,
+		entry.Buy_total_book_crypto.String(),
+		entry.Buy_total_book_fiat.String(),
+		entry.Sell_total_book_length,
+		entry.Sell_total_book_crypto.String(),
+		entry.Sell_total_book_fiat.String(),
+		entry.Exchange_rate.String(),
+	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to insert data into database: %v\n", err)
 		os.Exit(1)
 	}
-}
-
-func Connect() {
-	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
-
-	conn, err := pgx.Connect(context.Background(), connStr)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
-	}
-	defer conn.Close(context.Background())
-
-	var coin int64
-	var code string
-	err = conn.QueryRow(context.Background(), "SELECT coin, code FROM coins WHERE coin=$1", 1).Scan(&coin, &code)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Println(coin, code)
 }
 
 type Result struct {

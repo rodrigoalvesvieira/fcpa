@@ -91,7 +91,6 @@ func makeRequest(fn func() (*ex.Orderbook, error), book *ex.Orderbook) GenericFu
 		// Pln("RESPONSE TIME (THREADS): " + strconv.FormatInt(nsec, 10))
 
 		res.Time = nsec
-
 		*book = *res
 		return nil
 	}
@@ -105,18 +104,18 @@ func processArbitrageBuyBTCTurkSellKraken(books []ex.Orderbook, tiers ts.Result)
 
 	for i := 0; i < len(tiers.Values); i++ {
 		tier := tiers.Values[i]
-		//id := tiers.Ids[i]
+		id := tiers.Ids[i]
 
 		P("red", "QUERYING "+formatcurrency.PrintTRY(tier))
 
-		cryptoOut, fiatIn, orderCount, _, _, _ := btcturk.GetCryptoPayoutForBook(btcTurkBook.Asks, tier)
+		cryptoOut, fiatIn, buyCount, buyExCryptoVol, buyExFiatVol, buyExBookCount := btcturk.GetCryptoPayoutForBook(btcTurkBook.Asks, tier)
 
-		P("magenta", "BTCTURK TOTAL TRAVERSED    "+strconv.Itoa(orderCount))
+		P("magenta", "BTCTURK TOTAL TRAVERSED    "+strconv.Itoa(buyCount))
 		P("magenta", "BTCTURK TOTAL FIAT         "+formatcurrency.PrintTRY(fiatIn))
 		P("magenta", "BTCTURK TOTAL VOLUME       "+cryptoOut.String())
 
-		cryptoIn, fiatOut, krakenOrderCount, _, _, _ := kraken.GetFiatPayoutForBook(krakenBook.Bids, cryptoOut)
-		P("yellow", "KRAKEN TOTAL TRAVERSED   "+strconv.Itoa(krakenOrderCount))
+		cryptoIn, fiatOut, sellCount, sellExCryptoVol, sellExFiatVol, sellExBookLength := kraken.GetFiatPayoutForBook(krakenBook.Bids, cryptoOut)
+		P("yellow", "KRAKEN TOTAL TRAVERSED   "+strconv.Itoa(sellCount))
 		P("yellow", "KRAKEN TOTAL FIAT        "+formatcurrency.PrintUSD(fiatOut))
 		P("yellow", "KRAKEN TOTAL VOLUME      "+cryptoIn.String())
 
@@ -124,6 +123,32 @@ func processArbitrageBuyBTCTurkSellKraken(books []ex.Orderbook, tiers ts.Result)
 		exchangerate.Quo(exchangerate, fiatIn)
 
 		P("higreen", "EXCHANGE RATE "+formatcurrency.PrintUSD(exchangerate))
+
+		entry := ts.PriceQuery{
+			Coin: 1,
+			Tier: id,
+			Exchange_buy: 2,
+			Exchange_sell: 1,
+			Exchange_buy_coin: 4,
+			Exchange_sell_coin: 3,
+			Buy_query_time: btcTurkBook.Time,
+			Sell_query_time: krakenBook.Time,
+			Buy_input: tier,
+			Buy_count: buyCount,
+			Buy_vol: cryptoOut,
+			Sell_input: cryptoOut,
+			Sell_count: sellCount,
+			Sell_vol: fiatOut,
+			Buy_total_book_length: buyExBookCount,
+			Buy_total_book_crypto: buyExCryptoVol,
+			Buy_total_book_fiat: buyExFiatVol,
+			Sell_total_book_length: sellExBookLength,
+			Sell_total_book_crypto: sellExCryptoVol,
+			Sell_total_book_fiat: sellExFiatVol,
+			Exchange_rate: exchangerate,
+		}
+
+		ts.InsertPriceQuery(&entry)
 	}
 }
 
@@ -182,14 +207,14 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook, tiers ts.Result)
 
 		P("red", "QUERYING "+formatcurrency.PrintUSD(tier))
 
-		cryptoOut, fiatIn, orderCount, bookCrypto, bookFiat, bookCount := kraken.GetCryptoPayoutForBook(krakenBook.Asks, tier)
-		P("magenta", "KRAKEN TOTAL TRAVERSED    "+strconv.Itoa(orderCount))
+		cryptoOut, fiatIn, buyCount, buyExCryptoVol, buyExFiatVol, buyExBookCount := kraken.GetCryptoPayoutForBook(krakenBook.Asks, tier)
+		P("magenta", "KRAKEN TOTAL TRAVERSED    "+strconv.Itoa(buyCount))
 		P("magenta", "KRAKEN TOTAL FIAT         "+formatcurrency.PrintUSD(fiatIn))
 		P("magenta", "KRAKEN TOTAL VOLUME       "+cryptoOut.String())
 
-		cryptoIn, fiatOut, btcTurkOrderCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkBookCount := btcturk.GetFiatPayoutForBook(btcTurkBook.Bids, cryptoOut)
+		cryptoIn, fiatOut, sellCount, sellExCryptoVol, sellExFiatVol, sellExBookLength  := btcturk.GetFiatPayoutForBook(btcTurkBook.Bids, cryptoOut)
 		P("yellow", "QUERYING "+formatcurrency.PrintUSD(tier)+" "+cryptoOut.String())
-		P("yellow", "BTCTURK TOTAL TRAVERSED   "+strconv.Itoa(btcTurkOrderCount))
+		P("yellow", "BTCTURK TOTAL TRAVERSED   "+strconv.Itoa(sellCount))
 		P("yellow", "BTCTURK TOTAL FIAT        "+formatcurrency.PrintTRY(fiatOut))
 		P("yellow", "BTCTURK TOTAL VOLUME      "+cryptoIn.String())
 
@@ -198,17 +223,39 @@ func processArbitrageBuyKrakenSellBTCTurk(books []ex.Orderbook, tiers ts.Result)
 
 		P("higreen", "EXCHANGE RATE "+formatcurrency.PrintTRY(exchangerate))
 
-		ts.InsertEntry(1, id, 1, 3, krakenBook.Time, orderCount, fiatIn, cryptoOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
+		P("cyan", "KRAKEN TOTAL BOOK VOLUME  "+buyExCryptoVol.String())
+		P("cyan", "KRAKEN TOTAL BOOK LENGTH  "+strconv.Itoa(buyExBookCount))
+		P("cyan", "KRAKEN TOTAL BOOK FIAT    "+formatcurrency.PrintUSD(buyExFiatVol))
 
-		ts.InsertEntry(1, id, 2, 4, btcTurkBook.Time, btcTurkOrderCount, cryptoIn, fiatOut, bookCount, bookCrypto, bookFiat, btcTurkBookCount, btcTurkBookCrypto, btcTurkBookFiat, btcTurkOrderCount, fiatOut)
+		P("cyan", "BTCTURK TOTAL BOOK VOLUME "+sellExCryptoVol.String())
+		P("cyan", "BTCTURK TOTAL BOOK LENGTH "+strconv.Itoa(sellExBookLength))
+		P("cyan", "BTCTURK TOTAL BOOK FIAT   "+formatcurrency.PrintUSD(sellExFiatVol))
 
-		P("cyan", "KRAKEN TOTAL BOOK VOLUME  "+bookCrypto.String())
-		P("cyan", "KRAKEN TOTAL BOOK LENGTH  "+strconv.Itoa(bookCount))
-		P("cyan", "KRAKEN TOTAL BOOK FIAT    "+formatcurrency.PrintUSD(bookFiat))
+		entry := ts.PriceQuery{
+			Coin: 1,
+			Tier: id,
+			Exchange_buy: 1,
+			Exchange_sell: 2,
+			Exchange_buy_coin: 3,
+			Exchange_sell_coin: 4,
+			Buy_query_time: krakenBook.Time,
+			Sell_query_time: btcTurkBook.Time,
+			Buy_input: tier,
+			Buy_count: buyCount,
+			Buy_vol: cryptoOut,
+			Sell_input: cryptoOut,
+			Sell_count: sellCount,
+			Sell_vol: fiatOut,
+			Buy_total_book_length: buyExBookCount,
+			Buy_total_book_crypto: buyExCryptoVol,
+			Buy_total_book_fiat: buyExFiatVol,
+			Sell_total_book_length: sellExBookLength,
+			Sell_total_book_crypto: sellExCryptoVol,
+			Sell_total_book_fiat: sellExFiatVol,
+			Exchange_rate: exchangerate,
+		}
 
-		P("cyan", "BTCTURK TOTAL BOOK VOLUME "+btcTurkBookCrypto.String())
-		P("cyan", "BTCTURK TOTAL BOOK LENGTH "+strconv.Itoa(btcTurkBookCount))
-		P("cyan", "BTCTURK TOTAL BOOK FIAT   "+formatcurrency.PrintUSD(btcTurkBookFiat))
+		ts.InsertPriceQuery(&entry)
 	}
 }
 
