@@ -12,6 +12,7 @@ import (
 	ex "operatordesk/exchange"
 	"operatordesk/formatcurrency"
 	"operatordesk/utils"
+	"operatordesk/kraken"
 )
 
 type OrderBookResp struct {
@@ -254,4 +255,8 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 	}
 
 	return aggregateVol, aggregate, orderCount, totalCryptoVolume, totalFiatVolume, i
+}
+
+func GetCryptoPayoutForBook(book []ex.OrderItem, total *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
+	return kraken.CalculateCryptoPayout(book, total)
 }

@@ -36,7 +36,7 @@ INSERT INTO tiers(id, coin, amount, active) VALUES
 (4, 3, 250000, true),
 (5, 3, 500000, false),
 (1, 4, 80000, true),
-(2, 4, 40000, true),
+(2, 4, 400000, true),
 (3, 4, 800000, true),
 (4, 4, 1000000, true),
 (5, 4, 4000000, false);
