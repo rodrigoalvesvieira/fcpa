@@ -12,7 +12,7 @@ import (
 	ex "operatordesk/exchange"
 	"operatordesk/formatcurrency"
 	"operatordesk/utils"
-	"operatordesk/kraken"
+	"operatordesk/markets/kraken"
 )
 
 type OrderBookResp struct {

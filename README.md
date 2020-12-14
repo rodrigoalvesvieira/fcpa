@@ -19,7 +19,7 @@
 ### How it Works
 
 ```shell
-$ go run operatordesk.go
+$ go run fcpa.go
 ```
 
 #### Integrated Exchanges
