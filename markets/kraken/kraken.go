@@ -55,21 +55,14 @@ func GetFiatPayoutForBook(book []ex.OrderItem, targetVolume *big.Float) (*big.Fl
 				// Calculating remaining volume to satisfy target
 				fiatPayout = big.NewFloat(0.0).Copy(rem)
 				fiatPayout.Mul(fiatPayout, currentOrder.Price)
-
-				realFiat = utils.SubtractFee(fiatPayout, takerFee)
-
-				//aggregateFiat.Add(aggregateFiat, realFiat)
 				aggregateVol.Add(aggregateVol, rem)
 			} else {
 				fiatPayout = big.NewFloat(0.0).Copy(currentOrder.Volume)
 				fiatPayout.Mul(fiatPayout, currentOrder.Price)
-
-				realFiat = utils.SubtractFee(fiatPayout, takerFee)
-
-				//aggregateFiat.Add(aggregateFiat, realFiat)
 				aggregateVol.Add(aggregateVol, currentOrder.Volume)
 			}
 
+			realFiat = utils.SubtractFee(fiatPayout, takerFee)
 			aggregateFiat.Add(aggregateFiat, realFiat)
 		}
 	}
