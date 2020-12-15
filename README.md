@@ -7,7 +7,7 @@
 
 | Name                   | Version     |
 | ---------------------- | -----------:|
-| Go                     | 1.15.3      |
+| Go                     | 1.15.6      |
 | Timescale              | 1.7.4       |
 | PostgreSQL             | 11.10       |
 | Protocol Buffers       | 3.14.0      |
@@ -19,7 +19,7 @@
 ### How it Works
 
 ```shell
-$ go run fcpa.go
+$ go run fcpa
 ```
 
 #### Integrated Exchanges

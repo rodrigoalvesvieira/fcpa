@@ -1,18 +1,8 @@
-FROM go:1.15.5
+version: '2'
 
-WORKDIR /code
-
-ENV PORT 80
-
-docker images
-
-docker run <name-of-image>
-
-docker ps -a
-
-docker start <name-of-image>
-docker stop <name-of-image>
-
-docker rm <name-of-image>
-
-docker run -p 8080:80 --name fcpa -d fcpa-image
+services:
+  fcpa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fcpa

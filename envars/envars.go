@@ -2,17 +2,7 @@ package envars
 
 import (
 	"os"
-	"log"
-	"github.com/joho/godotenv"
 )
-
-func LoadConfig() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
-
 
 func IsProduction() bool {
 	p := os.Getenv("PRODUCTION")
@@ -37,6 +27,7 @@ func GetTwilioPhoneNumber() string {
 func GetKrakenAPIKey() string {
 	return os.Getenv("OPERATOR_DESK_KRAKEN_API_KEY")
 }
+
 // GetKrakenPrivateKey returns the Kraken Private Key
 func GetKrakenPrivateKey() string {
 	return os.Getenv("OPERATOR_DESK_KRAKEN_PRIVATE_KEY")

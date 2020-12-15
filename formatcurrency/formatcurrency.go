@@ -2,9 +2,10 @@ package formatcurrency
 
 import (
 	"math/big"
-	"golang.org/x/text/message"
-	"golang.org/x/text/language"
+
 	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 func PrintUSD(total *big.Float) string {
@@ -13,7 +14,6 @@ func PrintUSD(total *big.Float) string {
 
 	return res
 }
-
 
 func PrintTRY(total *big.Float) string {
 	p := message.NewPrinter(language.English)

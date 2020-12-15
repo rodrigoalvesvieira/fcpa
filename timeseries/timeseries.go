@@ -15,27 +15,27 @@ import (
 )
 
 type PriceQuery struct {
-	Coin int64
-	Tier int64
-	Exchange_buy int64
-	Exchange_sell int64
-	Exchange_buy_coin int64
-	Exchange_sell_coin int64
-	Buy_query_time int64
-	Sell_query_time int64
-	Buy_input *big.Float
-	Buy_count int
-	Buy_vol *big.Float
-	Sell_input *big.Float
-	Sell_count int
-	Sell_vol *big.Float
-	Buy_total_book_length int
-	Buy_total_book_crypto *big.Float
-	Buy_total_book_fiat *big.Float
+	Coin                   int64
+	Tier                   int64
+	Exchange_buy           int64
+	Exchange_sell          int64
+	Exchange_buy_coin      int64
+	Exchange_sell_coin     int64
+	Buy_query_time         int64
+	Sell_query_time        int64
+	Buy_input              *big.Float
+	Buy_count              int
+	Buy_vol                *big.Float
+	Sell_input             *big.Float
+	Sell_count             int
+	Sell_vol               *big.Float
+	Buy_total_book_length  int
+	Buy_total_book_crypto  *big.Float
+	Buy_total_book_fiat    *big.Float
 	Sell_total_book_length int
 	Sell_total_book_crypto *big.Float
-	Sell_total_book_fiat *big.Float
-	Exchange_rate *big.Float
+	Sell_total_book_fiat   *big.Float
+	Exchange_rate          *big.Float
 }
 
 func InsertPriceQuery(entry *PriceQuery) {
@@ -92,7 +92,7 @@ type Result struct {
 }
 
 func GetTiers(coin int64) (Result, error) {
-	connStr := "postgres://rodrigoalvesvieira:@localhost:5432/fcpa"
+	connStr := envars.GetDBUrl()
 
 	conn, err := pgx.Connect(context.Background(), connStr)
 	if err != nil {
