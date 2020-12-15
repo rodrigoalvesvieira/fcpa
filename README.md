@@ -50,8 +50,6 @@ $ vd extract.csv
 
 * https://data.bitcoinity.org/markets/volume/30d?c=e&t=b
 
-* [Kraken: "How long do digital assets/cryptocurrency deposits take?"](https://support.kraken.com/hc/en-us/articles/203325283-How-long-do-digital-assets-cryptocurrency-deposits-take-)
-
 ## Copyright
 
 © 2018-2020 Rodrigo Alves Vieira. All Rights Reserved.
