@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
+// Start starts a cycle that runs a function
 func Start(fn func(ts.Result, ts.Result), usdtiers ts.Result, trytiers ts.Result) {
-	cycle_time := time.Second * 60 / 3 //* 2
-	ticker := time.NewTicker(cycle_time)
+	cycletime := time.Second * 60
+	ticker := time.NewTicker(cycletime)
 
 	defer ticker.Stop()
 	done := make(chan bool)

@@ -3,3 +3,4 @@ keys
 .env
 vendor/*
 *.DS_Store
+*.pem

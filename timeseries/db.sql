@@ -9,6 +9,11 @@ CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
 -- \dx
 
+DROP TABLE coins;
+DROP TABLE tiers;
+DROP TABLE exchanges;
+DROP TABLE price_queries;
+
 CREATE TABLE IF NOT EXISTS "coins"(
     coin INTEGER,
     code TEXT,
@@ -35,11 +40,11 @@ INSERT INTO tiers(id, coin, amount, active) VALUES
 (3, 3, 100000, true),
 (4, 3, 250000, true),
 (5, 3, 500000, false),
-(1, 4, 80000, true),
-(2, 4, 400000, true),
-(3, 4, 800000, true),
-(4, 4, 1000000, true),
-(5, 4, 4000000, false);
+(6, 4, 80000, true),
+(7, 4, 400000, true),
+(8, 4, 800000, true),
+(9, 4, 1000000, true),
+(10, 4, 4000000, false);
 
 CREATE TABLE IF NOT EXISTS "exchanges"(
     exchange INTEGER,
