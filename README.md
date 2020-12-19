@@ -1,4 +1,4 @@
-# Fiat-Crypto Parity Arbitrage Algorithm (FCPA) v0.0.2
+# Fiat-Crypto Parity Arbitrage Algorithm (FCPA) v0.0.3
 > Software to find cryptocurrency arbitrage opportunities within a network of cryptocurrency exchanges
 
 ![The arbitrageurs](https://i.imgur.com/Pf5AZFX.jpg)
@@ -49,7 +49,7 @@ $ vd extract.csv
 ## Research
 
 * https://data.bitcoinity.org/markets/volume/30d?c=e&t=b
-
+* http://www.erights.org/elib/capability/ode/index.html
 ## Copyright
 
 © 2018-2020 Rodrigo Alves Vieira. All Rights Reserved.

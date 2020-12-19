@@ -21,3 +21,17 @@ AND exchange_rate <= (7.83 - (7.83 * 0.01))
 AND DATE(created_at) = '2020-12-15';
 
 -- https://www.bloomberg.com/quote/USDTRY:CUR?sref=RSaTyALF
+
+SELECT DISTINCT
+COUNT(sell_vol) as trades,
+SUM(buy_input) AS total_usd,
+SUM(sell_vol) AS total_try,
+SUM(sell_input) AS total_crypto,
+MIN(exchange_rate) AS min_rate,
+AVG(exchange_rate) AS avg_rate,
+MAX(exchange_rate) AS max_rate
+FROM price_queries
+WHERE exchange_sell = 2
+AND tier = 3
+AND exchange_rate <= (7.70 - (7.70 * 0.01))
+AND DATE(created_at) = '2020-12-18';
