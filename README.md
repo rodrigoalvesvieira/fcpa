@@ -50,6 +50,8 @@ $ vd extract.csv
 
 * https://data.bitcoinity.org/markets/volume/30d?c=e&t=b
 * http://www.erights.org/elib/capability/ode/index.html
+* https://medium.com/@FidelityDigitalAssets/the-omnibus-model-for-custody-96b69710f92d
+
 ## Copyright
 
 © 2018-2020 Rodrigo Alves Vieira. All Rights Reserved.
