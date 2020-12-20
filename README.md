@@ -51,6 +51,7 @@ $ vd extract.csv
 * https://data.bitcoinity.org/markets/volume/30d?c=e&t=b
 * http://www.erights.org/elib/capability/ode/index.html
 * https://medium.com/@FidelityDigitalAssets/the-omnibus-model-for-custody-96b69710f92d
+* https://blog.headlandstech.com/2017/08/03/quantitative-trading-summary/
 
 ## Copyright
 
