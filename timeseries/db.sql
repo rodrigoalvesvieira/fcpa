@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS "price_queries"(
     exchange_sell INTEGER NOT NULL,
     exchange_buy_coin INTEGER NOT NULL,
     exchange_sell_coin INTEGER NOT NULL,
+    exchange_buy_timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    exchange_sell_timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     exchange_buy_query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     exchange_sell_query_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     buy_input DECIMAL,

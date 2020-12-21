@@ -12,10 +12,14 @@ type OrderItem struct {
 	Volume *big.Float // volume at this price
 }
 
+// Orderbook Represents the parsed order complete book with
+// asks, bids, the exchange-issued timestamp and the timestamp
+// on receipt
 type Orderbook struct {
-	CoinName Coin
-	FiatName Fiat
-	Asks     []OrderItem
-	Bids     []OrderItem
-	Time     int64
+	CoinName     Coin
+	FiatName     Fiat
+	Asks         []OrderItem
+	Bids         []OrderItem
+	Time         int64
+	ExchangeTime int64
 }

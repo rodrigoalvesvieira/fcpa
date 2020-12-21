@@ -7,7 +7,7 @@ import (
 
 // Start starts a cycle that runs a function
 func Start(fn func(ts.Result, ts.Result), usdtiers ts.Result, trytiers ts.Result) {
-	cycletime := time.Second * 60
+	cycletime := time.Second * 60 / 10
 	ticker := time.NewTicker(cycletime)
 
 	defer ticker.Stop()

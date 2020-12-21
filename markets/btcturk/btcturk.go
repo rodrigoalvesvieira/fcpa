@@ -17,8 +17,9 @@ import (
 )
 
 type OrderBookResp struct {
-	Bid [][]string `json:"bids"`
-	Ask [][]string `json:"asks"`
+	Bid       [][]string `json:"bids"`
+	Ask       [][]string `json:"asks"`
+	Timestamp int64      `json:"timestamp"`
 }
 
 type BalanceResponse struct {
@@ -94,12 +95,9 @@ func GetOrderBook() (*ex.Orderbook, error) {
 
 			if errJSON == nil {
 				rawBook := AdaptOrderbook(jsonData.ResponseData.Ask, jsonData.ResponseData.Bid)
+				rawBook.ExchangeTime = jsonData.ResponseData.Timestamp
 				return rawBook, nil
-			} else {
-
 			}
-		} else {
-
 		}
 	}
 

@@ -15,27 +15,28 @@ import (
 )
 
 type PriceQuery struct {
-	Coin                   int64
-	Tier                   int64
-	Exchange_buy           int64
-	Exchange_sell          int64
-	Exchange_buy_coin      int64
-	Exchange_sell_coin     int64
-	Buy_query_time         int64
-	Sell_query_time        int64
-	Buy_input              *big.Float
-	Buy_count              int
-	Buy_vol                *big.Float
-	Sell_input             *big.Float
-	Sell_count             int
-	Sell_vol               *big.Float
-	Buy_total_book_length  int
-	Buy_total_book_crypto  *big.Float
-	Buy_total_book_fiat    *big.Float
-	Sell_total_book_length int
-	Sell_total_book_crypto *big.Float
-	Sell_total_book_fiat   *big.Float
-	Exchange_rate          *big.Float
+	Coin                    int64
+	Tier                    int64
+	Exchange_buy            int64
+	Exchange_sell           int64
+	Exchange_buy_coin       int64
+	Exchange_sell_coin      int64
+	Exchange_sell_timestamp int64
+	Buy_query_time          int64
+	Sell_query_time         int64
+	Buy_input               *big.Float
+	Buy_count               int
+	Buy_vol                 *big.Float
+	Sell_input              *big.Float
+	Sell_count              int
+	Sell_vol                *big.Float
+	Buy_total_book_length   int
+	Buy_total_book_crypto   *big.Float
+	Buy_total_book_fiat     *big.Float
+	Sell_total_book_length  int
+	Sell_total_book_crypto  *big.Float
+	Sell_total_book_fiat    *big.Float
+	Exchange_rate           *big.Float
 }
 
 func InsertPriceQuery(entry *PriceQuery) {
@@ -48,11 +49,12 @@ func InsertPriceQuery(entry *PriceQuery) {
 	}
 	defer dbpool.Close()
 
+	//insert := `INSERT INTO price_queries (coin, tier, exchange_buy, exchange_sell, exchange_buy_coin,  exchange_sell_coin, exchange_sell_timestamp, exchange_buy_query_time, exchange_sell_query_time, buy_input, buy_order_count, buy_vol, sell_input, sell_order_count, sell_vol, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat, sell_total_book_length, sell_total_book_crypto, sell_total_book_fiat, exchange_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);`
 	insert := `INSERT INTO price_queries (coin, tier, exchange_buy, exchange_sell, exchange_buy_coin,  exchange_sell_coin, exchange_buy_query_time, exchange_sell_query_time, buy_input, buy_order_count, buy_vol, sell_input, sell_order_count, sell_vol, buy_total_book_length, buy_total_book_crypto, buy_total_book_fiat, sell_total_book_length, sell_total_book_crypto, sell_total_book_fiat, exchange_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21);`
 
 	buyquerytime := &pgtype.Timestamp{Time: time.Unix(0, entry.Buy_query_time).UTC(), Status: pgtype.Present}
-
 	sellquerytime := &pgtype.Timestamp{Time: time.Unix(0, entry.Sell_query_time).UTC(), Status: pgtype.Present}
+	//selltimestamp := &pgtype.Timestamp{Time: time.Unix(0, entry.Exchange_sell_timestamp).UTC(), Status: pgtype.Present}
 
 	// Execute INSERT command
 	_, err := dbpool.Exec(
