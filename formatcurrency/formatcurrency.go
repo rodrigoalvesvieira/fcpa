@@ -1,3 +1,7 @@
+/*
+Package formatcurrency offers a set of functions to "pretty-print"
+currency amounts.
+*/
 package formatcurrency
 
 import (

@@ -1,3 +1,7 @@
+/*
+Package kraken implements the necessary methods for querying the Kraken API.
+
+*/
 package kraken
 
 import (
@@ -19,7 +23,8 @@ func adaptOrderbook(orderbook []krakenapi.OrderBookItem) []ex.OrderItem {
 	return itemArray
 }
 
-// CalculateFiatPayout returns
+// CalculateFiatPayout returns the total amount in fiat that a given amount in crypto can be sold for
+// based on the given order book.
 func CalculateFiatPayout(book []ex.OrderItem, targetVolume *big.Float, takerFee *big.Float) (*big.Float, *big.Float, int, *big.Float, *big.Float, int) {
 	aggregateFiat := big.NewFloat(0.0)
 	aggregateVol := big.NewFloat(0.0)
